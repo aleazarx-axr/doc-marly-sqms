@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../helpers/env.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 loadEnv(__DIR__ . '/../.env');
 
