@@ -33,7 +33,7 @@ class Service {
 
     // Get all active services
     public function read() {
-        $query = "SELECT id, name, requirements, created_at FROM " . $this->table_name . " WHERE is_archived = 0 ORDER BY id DESC";
+        $query = "SELECT id, name, requirements, created_at, is_archived FROM " . $this->table_name . " WHERE is_archived = 0 ORDER BY id DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;

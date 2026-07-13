@@ -29,16 +29,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $order++;
             }
         }
-        header('Location: index.php?status=edited');
+        $return_to = $_REQUEST['return_to'] ?? 'office_services';
+        header("Location: ../{$return_to}/index.php?tab=services&status=edited");
         exit();
     }
-    header('Location: index.php?status=error');
+    $return_to = $_REQUEST['return_to'] ?? 'office_services';
+        header("Location: ../{$return_to}/index.php?tab=services&status=error");
     exit();
 }
 
 $service_id = $_GET['id'] ?? '';
 if (empty($service_id)) {
-    header('Location: index.php');
+    header('Location: ../service_management/index.php?tab=services&');
     exit();
 }
 
@@ -48,7 +50,7 @@ $stmt->execute([$service_id]);
 $serviceName = $stmt->fetchColumn();
 
 if (!$serviceName) {
-    header('Location: index.php');
+    header('Location: ../service_management/index.php?tab=services&');
     exit();
 }
 

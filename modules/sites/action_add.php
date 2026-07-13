@@ -1,0 +1,28 @@
+<?php
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Site.php';
+
+Session::requireRole('admin');
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $site_name = $_POST['site_name'] ?? '';
+    $site_type = $_POST['site_type'] ?? 'offsite';
+    $return_to = $_POST['return_to'] ?? 'field_services';
+
+    if (!empty($site_name)) {
+        $db = new Database();
+        $conn = $db->getConnection();
+        $site = new Site($conn);
+        
+        $site->name = $site_name;
+        $site->type = $site_type;
+
+        if ($site->create()) {
+            header("Location: /modules/{$return_to}/index.php?tab=settings&status=added");
+            exit();
+        }
+    }
+    header("Location: /modules/{$return_to}/index.php?tab=settings&status=error");
+    exit();
+}

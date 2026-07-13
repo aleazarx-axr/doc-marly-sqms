@@ -15,10 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $service->id = $service_id;
         $service->archive();
     }
-    header('Location: index.php?status=archived');
+    $return_to = $_REQUEST['return_to'] ?? 'office_services';
+        header("Location: ../{$return_to}/index.php?tab=services&status=archived");
     exit();
 }
 
-header('Location: index.php');
+header('Location: ../service_management/index.php?tab=services&');
 exit();
 ?>
