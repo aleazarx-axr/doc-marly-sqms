@@ -47,7 +47,7 @@ $stmtSiteSrv = $conn->prepare("
     SELECT s.id, s.name 
     FROM site_services ss 
     JOIN services s ON ss.service_id = s.id 
-    WHERE ss.site_id = ? AND s.status = 'active'
+    WHERE ss.site_id = ? AND s.is_archived = 0
 ");
 $stmtSiteSrv->execute([$site_id]);
 $siteServices = [];

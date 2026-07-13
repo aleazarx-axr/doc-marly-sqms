@@ -6,8 +6,8 @@
             <li><a href="#">Queue Management</a></li>
         </ul>
         
-        <ul>
-            <li>
+        <ul style="margin-top: auto;">
+            <li style="border-bottom: none;">
                 <form action="/logout.php" method="post" style="margin: 0; padding: 10px 0;">
                     <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; color: #333; text-decoration: underline;">Logout</button>
                 </form>
