@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="password"><i style="margin-right: 6px;"></i> Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        <input type="password" id="password" name="password" placeholder=" " required>
                         <button type="button" class="toggle-pwd" id="togglePassword" aria-label="Toggle password visibility">
                             <i class="fas fa-eye-slash" id="pwdIcon"></i>
                         </button>
