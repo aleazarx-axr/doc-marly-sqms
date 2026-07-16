@@ -2,24 +2,40 @@
 require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/models/User.php';
+require_once __DIR__ . '/../../includes/Mailer.php';
 
 Session::requireRole('admin');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $role = $_POST['role'] ?? 'staff';
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $role = 'staff';
 
-    if (!empty($username) && !empty($password)) {
+    if (!empty($name) && !empty($email)) {
         $db = new Database();
         $conn = $db->getConnection();
         $userModel = new User($conn);
         
+        $username = $userModel->generateUsername($name);
+        $setup_token = bin2hex(random_bytes(32));
+        $token_expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+        
+        $userModel->name = $name;
         $userModel->username = $username;
-        $userModel->password = password_hash($password, PASSWORD_BCRYPT);
+        $userModel->email = $email;
+        $userModel->password = password_hash(bin2hex(random_bytes(10)), PASSWORD_BCRYPT); // Dummy password until set
         $userModel->role = $role;
+        $userModel->setup_token = $setup_token;
+        $userModel->token_expires = $token_expires;
 
         if ($userModel->create()) {
+            $mailer = new Mailer();
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $setupLink = $protocol . "://" . $host . "/setup.php?token=" . $setup_token;
+            
+            $mailer->sendWelcomeEmail($email, $name, $username, $setupLink);
+            
             header('Location: index.php?status=added');
             exit();
         }
@@ -39,20 +55,14 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
     <h2>Add New User</h2>
     <form action="add.php" method="POST" style="max-width: 400px;">
         <div class="form-group" style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px;">Username:</label>
-            <input type="text" name="username" required style="width: 100%; padding: 8px;">
+            <label style="display: block; margin-bottom: 5px;">Full Name:</label>
+            <input type="text" name="name" required style="width: 100%; padding: 8px;" placeholder="e.g. Juan Dela Cruz">
         </div>
         <div class="form-group" style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px;">Password:</label>
-            <input type="password" name="password" required style="width: 100%; padding: 8px;">
+            <label style="display: block; margin-bottom: 5px;">Email:</label>
+            <input type="email" name="email" required style="width: 100%; padding: 8px;" placeholder="e.g. juan@example.com">
         </div>
-        <div class="form-group" style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px;">Role:</label>
-            <select name="role" required style="width: 100%; padding: 8px;">
-                <option value="staff">Staff</option>
-                <option value="admin">Admin</option>
-            </select>
-        </div>
+
         <div style="margin-top: 25px;">
             <button type="submit" style="padding: 10px 20px; background-color: blue; color: white; border: none; cursor: pointer;">Save</button>
             <a href="index.php" style="margin-left: 15px; color: gray; text-decoration: underline;">Cancel</a>

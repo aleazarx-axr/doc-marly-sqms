@@ -6,19 +6,21 @@ require_once __DIR__ . '/../../includes/models/User.php';
 Session::requireRole('admin');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user_id = $_POST['user_id'] ?? '';
-    if (!empty($user_id)) {
+    $user_id = $_POST['user_id'] ?? null;
+
+    if ($user_id) {
         $db = new Database();
         $conn = $db->getConnection();
         $userModel = new User($conn);
-        
         $userModel->id = $user_id;
-        $userModel->delete();
+        
+        if ($userModel->restore()) {
+            header('Location: index.php?status=restored');
+            exit();
+        }
     }
-    header('Location: index.php?status=deleted');
-    exit();
 }
 
-header('Location: index.php');
+header('Location: index.php?status=error');
 exit();
 ?>

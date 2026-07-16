@@ -340,7 +340,7 @@
 
                 <!-- Users -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/users/index.php" class="nav-link-custom">
+                    <a href="/modules/users/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
                         <i class="bi bi-people-fill"></i> User Management
                     </a>
                 </li>
@@ -354,7 +354,7 @@
 
                 <!-- Settings -->
                 <li class="nav-item mb-1">
-                    <a href="#" class="nav-link-custom">
+                    <a href="/modules/settings/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
                         <i class="bi bi-sliders2"></i> Settings
                     </a>
                 </li>

@@ -15,25 +15,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    if (empty($username) || empty($password)) {
+    if (!is_string($username) || !is_string($password) || empty(trim($username)) || empty($password)) {
         $error = 'Username and password are required.';
     } else {
         $db = new Database();
         $conn = $db->getConnection();
         $user = new User($conn);
+        $user->username = $username; // For logging if user is not found
 
         if ($user->findByUsername($username)) {
-            if (password_verify($password, $user->password)) {
-                Session::set('user_id', $user->id);
-                Session::set('username', $user->username);
-                Session::set('role', $user->role);
-
-                header("Location: index.php");
-                exit();
-            } else {
+            if ($user->isLocked()) {
+                $user->logAuthEvent('login_failed');
+                // Ensure generic error
                 $error = 'Invalid username or password.';
+            } else {
+                if (password_verify($password, $user->password)) {
+                    if ($user->status !== 'active') {
+                        $user->logAuthEvent('login_failed');
+                        $error = 'Invalid username or password.';
+                    } else {
+                        // Generate OTP and Redirect to Verification Page
+                        $otpCode = $user->generateOTP();
+                        if ($otpCode) {
+                            require_once __DIR__ . '/includes/Mailer.php';
+                            $mailer = new Mailer();
+                            $mailer->sendOTPEmail($user->email, $user->name, $otpCode);
+                            
+                            // Set pending session
+                            Session::set('pending_otp_user_id', $user->id);
+                            
+                            header("Location: verify_otp.php");
+                            exit();
+                        } else {
+                            $error = 'Failed to generate security code. Please try again.';
+                        }
+                    }
+                } else {
+                    $user->incrementFailedAttempts();
+                    if ($user->failed_attempts >= 5) {
+                        $user->lockAccount(15);
+                        $user->logAuthEvent('account_lockout');
+                    } else {
+                        $user->logAuthEvent('login_failed');
+                    }
+                    $error = 'Invalid username or password.';
+                }
             }
         } else {
+            $user->logAuthEvent('login_failed');
+            // Prevent timing attack username enumeration
+            password_verify($password, '$2y$12$DUMMYHASHFORANTITIMINGATTACK1234');
             $error = 'Invalid username or password.';
         }
     }

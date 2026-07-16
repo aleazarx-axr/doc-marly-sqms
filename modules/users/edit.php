@@ -12,12 +12,14 @@ $userModel = new User($conn);
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $_POST['user_id'] ?? '';
     $username = $_POST['username'] ?? '';
+    $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? 'staff';
 
     if (!empty($user_id) && !empty($username)) {
         $userModel->id = $user_id;
         $userModel->username = $username;
+        $userModel->email = $email;
         $userModel->role = $role;
         
         if (!empty($password)) {
@@ -41,7 +43,7 @@ if (empty($user_id)) {
     exit();
 }
 
-$stmt = $conn->prepare("SELECT id, username, role FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, username, email, role FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $current_user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -65,6 +67,11 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
         <div class="form-group" style="margin-bottom: 15px;">
             <label style="display: block; margin-bottom: 5px;">Username:</label>
             <input type="text" name="username" value="<?php echo htmlspecialchars($current_user['username']); ?>" required style="width: 100%; padding: 8px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px;">Email:</label>
+            <input type="email" name="email" value="<?php echo htmlspecialchars($current_user['email'] ?? ''); ?>" style="width: 100%; padding: 8px;">
         </div>
         
         <div class="form-group" style="margin-bottom: 15px;">
