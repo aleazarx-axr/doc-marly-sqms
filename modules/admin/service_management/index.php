@@ -1,1 +1,1 @@
-<?php header("Location: services.php"); exit;
+<?php header("Location: /admin/services"); exit;

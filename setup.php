@@ -50,13 +50,13 @@ if (!$is_invalid && $_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Setup Password - Doc Marly SQMS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/login_ui.css">
+    <link rel="stylesheet" href="/assets/css/login_ui.css">
 </head>
 <body>
     <div class="login-card">
         <div class="login-header">
             <div class="brand-icon">
-                <img src="assets/images/docmarly.png" alt="Doc Marly" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                <img src="/assets/images/docmarly.png" alt="Doc Marly" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
             </div>
             <h2>Doc Marly</h2>
             <span class="subhead">Set Up Your Account</span>

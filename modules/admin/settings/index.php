@@ -9,26 +9,32 @@ $db = new Database();
 $conn = $db->getConnection();
 $settingModel = new Setting($conn);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $updates = [
-        'smtp_host' => trim($_POST['smtp_host'] ?? ''),
-        'smtp_port' => trim($_POST['smtp_port'] ?? ''),
-        'smtp_user' => trim($_POST['smtp_user'] ?? ''),
-        'smtp_from_email' => trim($_POST['smtp_from_email'] ?? ''),
-        'smtp_from_name' => trim($_POST['smtp_from_name'] ?? '')
-    ];
-    
-    // Only update password if a new one is provided
-    if (!empty($_POST['smtp_pass'])) {
-        $updates['smtp_pass'] = $_POST['smtp_pass'];
-    }
 
-    if ($settingModel->updateMultiple($updates)) {
-        header('Location: index.php?status=success');
-        exit();
-    } else {
-        header('Location: index.php?status=error');
-        exit();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'update_smtp') {
+        $updates = [
+            'smtp_host' => trim($_POST['smtp_host'] ?? ''),
+            'smtp_port' => trim($_POST['smtp_port'] ?? ''),
+            'smtp_user' => trim($_POST['smtp_user'] ?? ''),
+            'smtp_from_email' => trim($_POST['smtp_from_email'] ?? ''),
+            'smtp_from_name' => trim($_POST['smtp_from_name'] ?? '')
+        ];
+        
+        // Only update password if a new one is provided
+        if (!empty($_POST['smtp_pass'])) {
+            $updates['smtp_pass'] = $_POST['smtp_pass'];
+        }
+
+        if ($settingModel->updateMultiple($updates)) {
+            header('Location: /admin/settings?status=success');
+            exit();
+        } else {
+            header('Location: /admin/settings?status=error');
+            exit();
+        }
     }
 }
 
@@ -56,10 +62,13 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
     <?php endif; ?>
 
     <div style="background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
-        <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Email / SMTP Configuration</h3>
-        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Configure the Gmail/SMTP account used to send One-Time Passwords (OTPs) and Welcome links.</p>
-        
-        <form action="index.php" method="POST">
+        <form action="/admin/settings" method="POST">
+            <input type="hidden" name="action" value="update_smtp">
+            
+            <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Email / SMTP Configuration</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Configure the Gmail/SMTP account used to send One-Time Passwords (OTPs) and Welcome links.</p>
+            
+
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: bold;">SMTP Host:</label>
                 <input type="text" name="smtp_host" value="<?php echo htmlspecialchars($settings['smtp_host'] ?? ''); ?>" required style="width: 100%; padding: 8px;">

@@ -35,6 +35,28 @@ if ($role === 'admin') {
     // Fetch recent tickets for Queue Monitoring
     $stmt = $conn->query("SELECT t.ticket_number, s.name as service_name, t.status FROM tickets t LEFT JOIN services s ON t.service_id = s.id ORDER BY t.issued_at DESC LIMIT 5");
     $recentTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($role === 'information_staff') {
+    $stmt = $conn->query("SELECT id, name FROM services WHERE is_archived = 0 ORDER BY name ASC");
+    $activeServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch recent tickets for Queue Monitoring
+    $stmt = $conn->query("SELECT t.ticket_number, s.name as service_name, t.status FROM tickets t LEFT JOIN services s ON t.service_id = s.id ORDER BY t.issued_at DESC LIMIT 10");
+    $recentTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
+        if ($action === 'issue_ticket') {
+            $name = trim($_POST['name'] ?? '');
+            $service_id = $_POST['service_id'] ?? '';
+            $citizen_category = $_POST['citizen_category'] ?? 'Regular';
+            
+            if ($service_id) {
+                $ticketModel->createTicket($name, $service_id, $citizen_category);
+            }
+            header("Location: /?status=issued");
+            exit();
+        }
+    }
 } else {
     $staffCounters = $counterModel->getCountersByStaff($userId);
     $currentCounter = !empty($staffCounters) ? $staffCounters[0] : null;
@@ -60,8 +82,7 @@ if ($role === 'admin') {
         } elseif ($action === 'no_show' && $currentTicket) {
             $ticketModel->updateStatus($currentTicket['id'], 'no-show', $currentCounter['id']);
         }
-
-        header("Location: index.php");
+        header("Location: /");
         exit();
     }
 }
@@ -700,10 +721,14 @@ if ($role === 'admin') {
                     <span class="d-inline-block rounded-circle bg-primary" style="width: 8px; height: 8px;"></span>
                     Counter: <?= htmlspecialchars($currentCounter['name']) ?>
                 </div>
-            <?php elseif ($role !== 'admin'): ?>
+            <?php elseif ($role === 'service_staff'): ?>
                 <div class="d-inline-flex align-items-center gap-2 mt-3 px-3 py-1 bg-danger bg-opacity-10 text-danger rounded-pill fw-semibold" style="font-size: 13px;">
                     <span class="d-inline-block rounded-circle bg-danger" style="width: 8px; height: 8px;"></span>
                     No assigned counter
+                </div>
+            <?php elseif ($role === 'information_staff'): ?>
+                <div style="display: inline-block; margin-top: 10px; padding: 5px 15px; background: #17a2b8; color: #fff; border-radius: 8px; font-weight: 600;">
+                    Information Kiosk
                 </div>
             <?php endif; ?>
         </div>
@@ -797,8 +822,93 @@ if ($role === 'admin') {
                 </table>
             </div>
         </div>
+    <?php elseif ($role === 'information_staff'): ?>
+        <!-- Information Staff Dashboard (Kiosk & Monitoring) -->
+        <?php if (isset($_GET['status']) && $_GET['status'] === 'issued'): ?>
+            <p style="color: green; background: #f0f9f0; padding: 10px; border: 1px solid green; margin-bottom: 15px;">
+                Ticket successfully issued!
+            </p>
+        <?php endif; ?>
+        
+        <div class="dashboard-grid" style="grid-template-columns: 1fr 2fr;">
+            <!-- Left: Ticket Issuance Form -->
+            <div class="card">
+                <h3>Issue New Ticket</h3>
+                <form method="POST" action="/">
+                    <input type="hidden" name="action" value="issue_ticket">
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Citizen Name (Optional):</label>
+                        <input type="text" name="name" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Leave blank for walk-in">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Citizen Category:</label>
+                        <select name="citizen_category" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="Regular">Regular</option>
+                            <option value="Senior Citizen">Senior Citizen</option>
+                            <option value="PWD">PWD</option>
+                            <option value="Pregnant">Pregnant</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Requested Service:</label>
+                        <select name="service_id" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="">-- Select Service --</option>
+                            <?php foreach ($activeServices as $srv): ?>
+                                <option value="<?= $srv['id'] ?>"><?= htmlspecialchars($srv['name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" style="width: 100%; padding: 15px; background: #2a296f; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                        Issue Ticket
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Right: Queue Monitoring -->
+            <div class="card">
+                <h3>Global Queue Monitoring</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket Number</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($recentTickets)): ?>
+                            <?php foreach ($recentTickets as $ticket): ?>
+                                <tr>
+                                    <td><strong><?= htmlspecialchars($ticket['ticket_number']) ?></strong></td>
+                                    <td><?= htmlspecialchars($ticket['service_name']) ?></td>
+                                    <td>
+                                        <?php if($ticket['status'] === 'waiting'): ?>
+                                            <span style="color: orange; font-weight: bold;">Waiting</span>
+                                        <?php elseif($ticket['status'] === 'called'): ?>
+                                            <span style="color: blue; font-weight: bold;">Called</span>
+                                        <?php elseif($ticket['status'] === 'serving'): ?>
+                                            <span style="color: green; font-weight: bold;">Serving</span>
+                                        <?php else: ?>
+                                            <span style="color: gray; font-weight: bold;"><?= ucfirst(htmlspecialchars($ticket['status'])) ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: #999; padding: 20px;">No active queue.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     <?php else: ?>
-        <!-- Staff Dashboard (Queue Management Integration) -->
+        <!-- Service Staff Dashboard (Queue Management Integration) -->
         <?php if ($currentCounter): ?>
             <div class="row g-4 mb-4">
                 <!-- Current Serving Area -->

@@ -100,7 +100,7 @@ class Session {
 
     public static function requireLogin() {
         if (!self::isLoggedIn()) {
-            header("Location: /login.php"); 
+            header("Location: /login"); 
             exit();
         }
 
@@ -108,7 +108,7 @@ class Session {
         $timeout_duration = 1800;
         if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
             self::destroy();
-            header("Location: /login.php?error=timeout");
+            header("Location: /login?error=timeout");
             exit();
         }
         $_SESSION['last_activity'] = time();
@@ -118,7 +118,7 @@ class Session {
         self::requireLogin();
         
         if (self::get('role') !== $role) {
-            header("Location: /index.php");
+            header("Location: /");
             exit();
         }
     }

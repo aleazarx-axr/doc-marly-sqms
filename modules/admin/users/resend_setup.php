@@ -22,17 +22,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $setupLink = $protocol . "://" . $host . "/setup.php?token=" . $userModel->setup_token;
                 
                 if ($mailer->sendWelcomeEmail($userModel->email, $userModel->name, $userModel->username, $setupLink)) {
-                    header('Location: index.php?status=resent');
+                    header("Location: /admin/users?status=resent");
                     exit();
                 }
             }
         }
     }
     
-    header('Location: index.php?status=resend_error');
+    header("Location: /admin/users?status=error");
     exit();
 } else {
-    header('Location: index.php');
+    header("Location: /admin/users");
     exit();
 }
 ?>

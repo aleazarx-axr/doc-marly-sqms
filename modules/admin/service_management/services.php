@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Refresh page to prevent form resubmission
-        $redirectUrl = "services.php" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
+        $redirectUrl = "/admin/services" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
         header("Location: $redirectUrl");
         exit;
     }
@@ -82,7 +82,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 <!-- ADD/EDIT SERVICE FORM -->
 <div id="serviceFormContainer" style="display: none; margin-bottom: 20px; border: 1px solid #ccc; padding: 15px;">
     <h3 id="formTitle" style="margin-top: 0;">Add New Service</h3>
-    <form method="POST" action="services.php" id="addServiceForm">
+    <form method="POST" action="/admin/services" id="addServiceForm">
         <input type="hidden" name="action" value="save_service">
         <input type="hidden" name="id" id="serviceId" value="">
         
@@ -131,7 +131,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                     <td>
                         <?php if ($view === 'archived'): ?>
                             <!-- Restore Form -->
-                            <form method="POST" action="services.php?view=archived" style="display:inline;" onsubmit="return confirm('Restore this service?');">
+                            <form method="POST" action="/admin/services?view=archived" style="display:inline;" onsubmit="return confirm('Restore this service?');">
                                 <input type="hidden" name="action" value="restore_service">
                                 <input type="hidden" name="id" value="<?= $row['id'] ?>">
                                 <button type="submit">Restore</button>

@@ -29,11 +29,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($userModel->update()) {
-            header('Location: index.php?status=edited');
+            header('Location: /admin/users?status=edited');
             exit();
         }
     }
-    header('Location: index.php?status=error');
+    header('Location: /admin/users?status=error');
     exit();
 }
 
@@ -61,7 +61,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 
 <div class="main-content">
     <h2>Edit User</h2>
-    <form action="edit.php" method="POST" style="max-width: 400px;">
+    <form action="/admin/users/edit?id=<?= htmlspecialchars($id) ?>" method="POST" style="max-width: 400px;">
         <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($current_user['id']); ?>">
         
         <div class="form-group" style="margin-bottom: 15px;">
@@ -90,7 +90,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
         
         <div style="margin-top: 25px;">
             <button type="submit" style="padding: 10px 20px; background-color: blue; color: white; border: none; cursor: pointer;">Update</button>
-            <a href="index.php" style="margin-left: 15px; color: gray; text-decoration: underline;">Cancel</a>
+            <a href="/admin/users" style="margin-left: 15px; color: gray; text-decoration: underline;">Cancel</a>
         </div>
     </form>
 </div>

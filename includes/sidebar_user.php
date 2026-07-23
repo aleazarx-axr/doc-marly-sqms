@@ -231,14 +231,14 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item mb-1">
-                    <a href="/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : ''; ?>">
+                    <a href="/" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : ''; ?>">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
 
                 <!-- Records -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/admin/records/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
+                    <a href="/admin/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
                     </a>
                 </li>
@@ -254,15 +254,15 @@
             </div>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item ">
-                    <a href="#" class="nav-link-custom bg-warning text-dark">
-                        <i class="bi bi-tv-fill text-danger"></i> Live Display
+                    <a href="/display" target="_blank" class="nav-link-custom bg-warning text-dark">
+                        <i class="bi bi-tv-fill text-danger"></i> Launch Live Display
                     </a>
                 </li>
             </ul>
 
             <!-- Spacer + logout -->
             <div class="mt-auto pt-3">
-                <form action="/logout.php" method="post">
+                <form action="/logout" method="post">
                     <button class="btn logout-btn w-100" type="submit">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>

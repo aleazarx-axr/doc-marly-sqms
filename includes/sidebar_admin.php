@@ -297,7 +297,7 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item mb-1">
-                    <a href="/index.php" class="nav-link-custom active">
+                    <a href="/" class="nav-link-custom active">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
@@ -311,10 +311,10 @@
                             </button>
                             <div id="smCollapse" class="accordion-collapse collapse <?php echo (isset($activeMenu) && in_array($activeMenu, ['services', 'counters'])) ? 'show' : ''; ?>" data-bs-parent="#serviceManagementMenu">
                                 <div class="accordion-body accordion-body-custom">
-                                    <a href="/modules/admin/service_management/services.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'services') ? 'active' : ''; ?>">
+                                    <a href="/admin/services" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'services') ? 'active' : ''; ?>">
                                         <i class="bi bi-gear"></i> Services
                                     </a>
-                                    <a href="/modules/admin/service_management/counters.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'counters') ? 'active' : ''; ?>">
+                                    <a href="/admin/counters" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'counters') ? 'active' : ''; ?>">
                                         <i class="bi bi-display"></i> Counters
                                     </a>
                                 </div>
@@ -325,14 +325,14 @@
 
                 <!-- Records -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/admin/records/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
+                    <a href="/admin/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
                     </a>
                 </li>
 
                 <!-- Users -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/admin/users/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
+                    <a href="/admin/users" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
                         <i class="bi bi-people-fill"></i> User Management
                     </a>
                 </li>
@@ -344,9 +344,16 @@
                     </a>
                 </li>
 
+                <!-- Media -->
+                <li class="nav-item mb-1">
+                    <a href="/admin/media" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'media') ? 'active' : ''; ?>">
+                        <i class="bi bi-collection-play"></i> Media
+                    </a>
+                </li>
+
                 <!-- Settings -->
                 <li class="nav-item mb-1">
-                    <a href="/development.php?menu=settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
+                    <a href="/admin/settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
                         <i class="bi bi-sliders2"></i> Settings
                     </a>
                 </li>
@@ -361,15 +368,15 @@
             </div>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item ">
-                    <a href="#" class="nav-link-custom bg-warning text-dark">
-                        <i class="bi bi-tv-fill text-danger"></i> Live Display
+                    <a href="/display" target="_blank" class="nav-link-custom bg-warning text-dark">
+                        <i class="bi bi-tv-fill text-danger"></i> Launch Live Display
                     </a>
                 </li>
             </ul>
 
             <!-- Spacer + logout -->
             <div class="mt-auto pt-3">
-                <form action="/logout.php" method="post">
+                <form action="/logout" method="post">
                     <button class="btn logout-btn w-100" type="submit">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>

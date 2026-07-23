@@ -5,9 +5,8 @@ require_once __DIR__ . '/includes/models/User.php';
 
 Session::start();
 
-// Redirect to dashboard if already logged in
 if (Session::isLoggedIn()) {
-    header("Location: index.php");
+    header("Location: /");
     exit();
 }
 
@@ -44,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // Set pending session
                             Session::set('pending_otp_user_id', $user->id);
                             
-                            header("Location: verify_otp.php");
+                            header("Location: /verify_otp.php");
                             exit();
                         } else {
                             $error = 'Failed to generate security code. Please try again.';
@@ -81,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/png" href="assets/images/marly1.ico">
     <!-- Font Awesome 6 (free) for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/login_ui.css">
+    <link rel="stylesheet" href="/assets/css/login_ui.css">
 
 </head>
 
@@ -90,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- HEADER WITH BLUE BACKGROUND -->
         <div class="login-header">
             <div class="brand-icon">
-                <img src="assets/images/docmarly.png" alt="User Icon" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                <img src="/assets/images/docmarly.png" alt="User Icon" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
             </div>
             <h2>Doc Marly</h2>
             <span class="subhead">Smart Queue · login</span>
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <!-- LOGIN FORM -->
-            <form action="login.php" method="post" autocomplete="on">
+            <form action="/login" method="post" autocomplete="on">
                 <div class="input-group">
                     <label for="username"><i style="margin-right: 6px;"></i> Username</label>
                     <div class="input-wrapper">

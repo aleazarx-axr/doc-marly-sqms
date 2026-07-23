@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $cs = new CounterService($conn);
                     $cs->saveAssignments($c->id, $assignedServices);
                 }
-                $redirectUrl = "counters.php" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
+                $redirectUrl = "/admin/counters" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
                 header("Location: $redirectUrl");
                 exit;
             }
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $c = new Counter($conn);
             $c->id = $_POST['id'];
             $c->archive();
-            $redirectUrl = "counters.php" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
+            $redirectUrl = "/admin/counters" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
             header("Location: $redirectUrl");
             exit;
         }
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $c = new Counter($conn);
             $c->id = $_POST['id'];
             $c->restore();
-            $redirectUrl = "counters.php" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
+            $redirectUrl = "/admin/counters" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
             header("Location: $redirectUrl");
             exit;
         }
@@ -200,7 +200,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                             <td>
                                 <?php if ($view === 'archived'): ?>
                                     <!-- Restore Form -->
-                                    <form method="POST" action="counters.php?view=archived" style="display:inline;" onsubmit="return confirm('Restore this counter?');">
+                                    <form method="POST" action="/admin/counters?view=archived" style="display:inline;" onsubmit="return confirm('Restore this counter?');">
                                         <input type="hidden" name="action" value="restore_counter">
                                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                         <button type="submit">Restore</button>
@@ -240,7 +240,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 <!-- Counter Form -->
 <div id="counterFormContainer" style="display: none; margin-bottom: 20px; border: 1px solid #ccc; padding: 15px;">
     <h3 id="counterModalTitle" style="margin-top: 0;">Add Counter</h3>
-    <form id="counterForm" method="POST" action="counters.php">
+    <form id="counterForm" method="POST" action="/admin/counters">
         <input type="hidden" name="action" value="save_counter">
         <input type="hidden" id="c_id" name="id">
         

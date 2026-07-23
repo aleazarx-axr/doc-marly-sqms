@@ -113,5 +113,40 @@ class Ticket {
         $stmt->execute($serviceIds);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function createTicket($name, $service_id, $citizen_category) {
+        $today = date('Y-m-d');
+        
+        $queryNum = "SELECT ticket_number FROM " . $this->table_name . " 
+                     WHERE service_id = ? AND DATE(created_at) = ? 
+                     ORDER BY id DESC LIMIT 1";
+        $stmtNum = $this->conn->prepare($queryNum);
+        $stmtNum->execute([$service_id, $today]);
+        $lastTicket = $stmtNum->fetch(PDO::FETCH_ASSOC);
+        
+        $nextNum = 1;
+        if ($lastTicket) {
+            $parts = explode('-', $lastTicket['ticket_number']);
+            $nextNum = intval(end($parts)) + 1;
+        }
+        
+        // Get service name for prefix
+        $queryService = "SELECT name FROM services WHERE id = ?";
+        $stmtService = $this->conn->prepare($queryService);
+        $stmtService->execute([$service_id]);
+        $service = $stmtService->fetch(PDO::FETCH_ASSOC);
+        $prefix = $service && !empty($service['name']) ? substr($service['name'], 0, 1) : 'T';
+        
+        $ticket_number = strtoupper($prefix) . '-' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+        
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (name, ticket_number, service_id, citizen_category, status, issued_at) 
+                  VALUES (?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP)";
+        $stmt = $this->conn->prepare($query);
+        if ($stmt->execute([$name, $ticket_number, $service_id, $citizen_category])) {
+            return $ticket_number;
+        }
+        return false;
+    }
 }
 ?>

@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ticketModel->updateStatus($currentTicket['id'], 'no-show', $currentCounter['id']);
     }
     
-    header("Location: index.php");
+    header("Location: /staff/queue");
     exit();
 }
 

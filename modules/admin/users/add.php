@@ -36,11 +36,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             $mailer->sendWelcomeEmail($email, $name, $username, $setupLink);
             
-            header('Location: index.php?status=added');
+            header('Location: /admin/users?status=added');
             exit();
         }
     }
-    header('Location: index.php?status=error');
+    header('Location: /admin/users?status=error');
     exit();
 }
 
@@ -53,7 +53,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 
 <div class="main-content">
     <h2>Add New User</h2>
-    <form action="add.php" method="POST" style="max-width: 400px;">
+    <form action="/admin/users/add" method="POST" style="max-width: 400px;">
         <div class="form-group" style="margin-bottom: 15px;">
             <label style="display: block; margin-bottom: 5px;">Full Name:</label>
             <input type="text" name="name" required style="width: 100%; padding: 8px;" placeholder="e.g. Juan Dela Cruz">
@@ -74,7 +74,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 
         <div style="margin-top: 25px;">
             <button type="submit" style="padding: 10px 20px; background-color: blue; color: white; border: none; cursor: pointer;">Save</button>
-            <a href="index.php" style="margin-left: 15px; color: gray; text-decoration: underline;">Cancel</a>
+            <a href="/admin/users" style="color: blue; text-decoration: underline; margin-bottom: 20px; display: inline-block;">&larr; Back to Users</a>
         </div>
     </form>
 </div>

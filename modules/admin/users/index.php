@@ -33,11 +33,11 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
         <h2><?php echo $view === 'archived' ? 'Archived Users' : 'Manage Users'; ?></h2>
         <div>
             <?php if ($view === 'archived'): ?>
-                <a href="index.php" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Users</a>
+                <a href="/admin/users/" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Users</a>
             <?php else: ?>
-                <a href="index.php?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
+                <a href="/admin/users/?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
             <?php endif; ?>
-            <a href="add.php" style="color: blue; text-decoration: underline; font-size: 16px;">+ Add User</a>
+            <a href="/admin/users/add" style="color: blue; text-decoration: underline; font-size: 16px;">+ Add User</a>
         </div>
     </div>
 
@@ -86,23 +86,23 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                         </td>
                         <td>
                             <?php if ($row['status'] !== 'archived'): ?>
-                                <a href="edit.php?id=<?php echo $row['id']; ?>" style="margin-right: 5px; color: blue; text-decoration: underline;">Edit</a>
+                                <a href="/admin/users/edit?id=<?php echo $row['id']; ?>" style="margin-right: 5px; color: blue; text-decoration: underline;">Edit</a>
                             <?php endif; ?>
                             
                             <?php if (!empty($row['setup_token']) && $row['status'] !== 'archived'): ?>
-                                <form action="resend_setup.php" method="POST" style="display:inline;" onsubmit="return confirm('Generate a new setup link and resend email?');">
+                                <form action="/admin/users/resend_setup" method="POST" style="display:inline;" onsubmit="return confirm('Generate a new setup link and resend email?');">
                                     <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
                                     <button type="submit" style="margin-right: 5px; cursor: pointer; color: #007bff; background: none; border: none; text-decoration: underline;">Resend Link</button>
                                 </form>
                             <?php endif; ?>
                             
                             <?php if ($row['status'] === 'archived'): ?>
-                                <form action="restore.php" method="POST" style="display:inline;" onsubmit="return confirm('Restore this user? They will be able to log in again.');">
+                                <form action="/admin/users/restore" method="POST" style="display:inline;" onsubmit="return confirm('Restore this user? They will be able to log in again.');">
                                     <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
                                     <button type="submit" style="cursor: pointer; color: green; background: none; border: none; text-decoration: underline;">Restore</button>
                                 </form>
                             <?php elseif ($row['username'] !== $_SESSION['user_id']): ?>
-                                <form action="archive.php" method="POST" style="display:inline;" onsubmit="return confirm('Archive this user? They will no longer be able to log in.');">
+                                <form action="/admin/users/archive" method="POST" style="display:inline;" onsubmit="return confirm('Archive this user? They will no longer be able to log in.');">
                                     <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
                                     <button type="submit" style="cursor: pointer; color: orange; background: none; border: none; text-decoration: underline;">Archive</button>
                                 </form>

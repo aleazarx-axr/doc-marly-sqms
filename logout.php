@@ -16,5 +16,5 @@ if (Session::isLoggedIn()) {
 
 Session::destroy();
 
-header("Location: login.php");
+header("Location: /login");
 exit();

@@ -7,7 +7,7 @@ Session::start();
 
 // If already logged in, redirect
 if (Session::isLoggedIn()) {
-    header("Location: index.php");
+    header("Location: /");
     exit();
 }
 
@@ -15,7 +15,7 @@ $pending_user_id = Session::get('pending_otp_user_id');
 
 // If no pending OTP, send back to login
 if (!$pending_user_id) {
-    header("Location: login.php");
+    header("Location: /login");
     exit();
 }
 
@@ -25,7 +25,7 @@ $user = new User($conn);
 
 if (!$user->findById($pending_user_id)) {
     Session::remove('pending_otp_user_id');
-    header("Location: login.php");
+    header("Location: /login");
     exit();
 }
 
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Session::set('role', $user->role);
             Session::set('last_activity', time());
 
-            header("Location: index.php");
+            header("Location: /");
             exit();
         } else {
             // Invalid OTP (Increment failed attempts? Optional, but good for security)
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user->lockAccount(15);
                 $user->logAuthEvent('account_lockout');
                 Session::remove('pending_otp_user_id');
-                header("Location: login.php?status=locked");
+                header("Location: /login?status=locked");
                 exit();
             }
             $error = 'Invalid or expired verification code.';
@@ -89,13 +89,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Login - Doc Marly SQMS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/login_ui.css">
+    <link rel="stylesheet" href="/assets/css/login_ui.css">
 </head>
 <body>
     <div class="login-card">
         <div class="login-header">
             <div class="brand-icon">
-                <img src="assets/images/docmarly.png" alt="Doc Marly" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                <img src="/assets/images/docmarly.png" alt="Doc Marly" class="mb-3" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
             </div>
             <h2>Doc Marly</h2>
             <span class="subhead">Verification Required</span>
