@@ -1,0 +1,171 @@
+<?php
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Service.php';
+
+Session::requireRole('admin');
+
+$db = new Database();
+$conn = $db->getConnection();
+$serviceModel = new Service($conn);
+
+$stmtServices = $serviceModel->read();
+$services = [];
+while ($row = $stmtServices->fetch(PDO::FETCH_ASSOC)) {
+    $services[] = $row;
+}
+
+$pageTitle = 'Manage Services - Admin Portal';
+$activeMenu = 'services';
+
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar_admin.php';
+?>
+
+<style>
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1000; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.5); 
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto; 
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+    }
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+    }
+</style>
+
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2>Manage Services</h2>
+        <button onclick="openModal('addServiceModal')" style="color: blue; border: none; background: none; cursor: pointer; text-decoration: underline; font-size: 16px; padding: 0;">+ Add Service</button>
+    </div>
+
+    <?php if(isset($_GET['status'])): ?>
+        <?php
+            $status = $_GET['status'];
+            $msg = "Action completed successfully.";
+            $color = "green";
+            if ($status == 'error') { $msg = "An error occurred."; $color = "red"; }
+            if ($status == 'archived') { $msg = "Service archived successfully."; $color = "orange"; }
+            if ($status == 'edited') { $msg = "Service updated successfully."; $color = "blue"; }
+            if ($status == 'added') { $msg = "Service added successfully."; $color = "green"; }
+        ?>
+        <p style="color: <?php echo $color; ?>; background: #f0f9f0; padding: 10px; border: 1px solid <?php echo $color; ?>; margin-bottom: 15px;">
+            <?php echo $msg; ?>
+        </p>
+    <?php endif; ?>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Service Name</th><th>Requirements</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (count($services) > 0): ?>
+                <?php foreach ($services as $row): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['requirements']); ?></td>
+                        <td>
+                            <a href="edit.php?id=<?php echo $row['id']; ?>" style="margin-right: 5px; color: blue; text-decoration: underline;">Edit</a>
+                            <form action="archive.php" method="POST" style="display:inline;" onsubmit="return confirm('Archive this service?');">
+                                <input type="hidden" name="service_id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" style="cursor: pointer; color: orange; background: none; border: none; text-decoration: underline;">Archive</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="4">No active services found.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    <!-- ADD SERVICE MODAL -->
+    <div id="addServiceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addServiceModal')">&times;</span>
+            <h2>Add New Service</h2>
+            <form action="action_add.php" method="POST">
+                <input type="hidden" name="return_to" value="services">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="add_service_name" style="display: block; margin-bottom: 5px;">Service Name:</label>
+                    <input type="text" id="add_service_name" name="service_name" required style="width: 100%; padding: 8px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Requirements Checklist:</label>
+                    <div id="add-requirements-container" style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #f9f9f9;">
+                        <div class="req-item" style="margin-bottom: 8px; display: flex;">
+                            <input type="text" name="requirements[]" placeholder="e.g. Valid ID" style="flex: 1; padding: 8px;">
+                            <button type="button" onclick="removeReq(this)" style="margin-left: 5px; color: red; cursor: pointer; border: none; background: none; font-size: 16px;">✖</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addReq('add-requirements-container')" style="margin-top: 10px; font-size: 14px; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; background: white;">+ Add Requirement</button>
+                </div>
+                <div style="margin-top: 25px;">
+                    <button type="submit" style="padding: 10px 20px; background-color: blue; color: white; border: none; cursor: pointer;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+    function addReq(containerId) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = 'req-item';
+        div.style.marginBottom = '8px';
+        div.style.display = 'flex';
+        div.innerHTML = `
+            <input type="text" name="requirements[]" placeholder="e.g. Valid ID" style="flex: 1; padding: 8px;">
+            <button type="button" onclick="removeReq(this)" style="margin-left: 5px; color: red; cursor: pointer; border: none; background: none; font-size: 16px;">✖</button>
+        `;
+        container.appendChild(div);
+    }
+    function removeReq(btn) {
+        const container = btn.closest('div[id$="-requirements-container"]');
+        if (container.children.length > 1) {
+            btn.parentElement.remove();
+        } else {
+            btn.parentElement.querySelector('input').value = '';
+        }
+    }
+</script>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

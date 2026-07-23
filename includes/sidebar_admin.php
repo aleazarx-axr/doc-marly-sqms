@@ -285,7 +285,7 @@
 
             <!-- Brand -->
             <div class="d-flex align-items-center gap-3 pb-4 mb-3 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
-                <img src="assets/images/docmarly.png" alt="User Icon" class="mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                <img src="/assets/images/docmarly.png" alt="User Icon" class="mb-3" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
                 <div>
                     <span class="fw-bold fs-5">DOC MARLY</span>
                     <small class="d-block text-white-50" style="font-size:0.6rem;">Smart Queing Management System</small>
@@ -302,29 +302,21 @@
                     </a>
                 </li>
 
-                <!-- Service Management accordion -->
+                <!-- Service Management -->
                 <li class="nav-item mb-1">
-                    <div class="accordion accordion-flush" id="serviceMenu">
-                        <div class="accordion-item bg-transparent border-0">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button accordion-button-custom collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#services">
-                                    <i class="bi bi-briefcase-fill"></i> Service Management
-                                </button>
-                            </h2>
-                            <div id="services" class="accordion-collapse collapse">
+                    <div class="accordion" id="serviceManagementMenu">
+                        <div class="accordion-item border-0 bg-transparent">
+                            <button class="accordion-button accordion-button-custom <?php echo (isset($activeMenu) && in_array($activeMenu, ['services', 'counters'])) ? '' : 'collapsed'; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#smCollapse" style="padding: 0.65rem 1rem;">
+                                <i class="bi bi-briefcase-fill"></i> Service Management
+                            </button>
+                            <div id="smCollapse" class="accordion-collapse collapse <?php echo (isset($activeMenu) && in_array($activeMenu, ['services', 'counters'])) ? 'show' : ''; ?>" data-bs-parent="#serviceManagementMenu">
                                 <div class="accordion-body accordion-body-custom">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a href="/modules/office_services/index.php" class="nav-link-custom">
-                                                <i class="bi bi-building"></i> Office Services
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="/modules/field_services/index.php" class="nav-link-custom">
-                                                <i class="bi bi-tools"></i> Field Services
-                                            </a>
-                                        </li>
-                                    </ul>
+                                    <a href="/modules/admin/service_management/services.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'services') ? 'active' : ''; ?>">
+                                        <i class="bi bi-gear"></i> Services
+                                    </a>
+                                    <a href="/modules/admin/service_management/counters.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'counters') ? 'active' : ''; ?>">
+                                        <i class="bi bi-display"></i> Counters
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -333,28 +325,28 @@
 
                 <!-- Records -->
                 <li class="nav-item mb-1">
-                    <a href="#" class="nav-link-custom">
+                    <a href="/modules/admin/records/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
                     </a>
                 </li>
 
                 <!-- Users -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/users/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
+                    <a href="/modules/admin/users/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
                         <i class="bi bi-people-fill"></i> User Management
                     </a>
                 </li>
 
                 <!-- Devices -->
                 <li class="nav-item mb-1">
-                    <a href="#" class="nav-link-custom">
+                    <a href="/development.php?menu=devices" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'devices') ? 'active' : ''; ?>">
                         <i class="bi bi-device-hdd-fill"></i> Devices
                     </a>
                 </li>
 
                 <!-- Settings -->
                 <li class="nav-item mb-1">
-                    <a href="/modules/settings/index.php" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
+                    <a href="/development.php?menu=settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
                         <i class="bi bi-sliders2"></i> Settings
                     </a>
                 </li>
