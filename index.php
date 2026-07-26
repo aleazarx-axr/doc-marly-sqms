@@ -15,7 +15,6 @@ if ($role === 'admin') {
     header("Location: /service_staff/queue");
     exit();
 }
-<<<<<<< HEAD
 
 $pageTitle = ($role === 'admin') ? 'Admin Dashboard - Doc Marly SQMS' : 'Staff Dashboard - Doc Marly SQMS';
 $activeMenu = 'dashboard';
