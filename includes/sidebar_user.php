@@ -238,8 +238,15 @@
 
                 <!-- Records -->
                 <li class="nav-item mb-1">
-                    <a href="/admin/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
+                    <a href="/service_staff/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
+                    </a>
+                </li>
+
+                <!-- Profile -->
+                <li class="nav-item mb-1">
+                    <a href="/profile" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'profile') ? 'active' : ''; ?>">
+                        <i class="bi bi-person-fill"></i> Profile Settings
                     </a>
                 </li>
 

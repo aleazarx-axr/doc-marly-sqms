@@ -33,11 +33,14 @@ foreach ($activeTicketsList as $t) {
     $activeTicketsByCounter[$t['counter_id']] = $t;
 }
 
-// Build activeData mapping ticket number to counter name for the speech API
+// Build activeData mapping ticket number to an array of counter name and called_at timestamp for the speech API
 foreach ($counters as $counter) {
     if (isset($activeTicketsByCounter[$counter['id']])) {
         $ticket = $activeTicketsByCounter[$counter['id']];
-        $activeData[$ticket['ticket_number']] = $counter['name'];
+        $activeData[$ticket['ticket_number']] = [
+            'counterName' => $counter['name'],
+            'calledAt' => $ticket['called_at']
+        ];
     }
 }
 ?>
@@ -104,9 +107,11 @@ foreach ($counters as $counter) {
         
         let newAnnouncements = [];
         
-        for (const [ticketNumber, counterName] of Object.entries(currentActiveData)) {
-            if (!previousActiveData[ticketNumber]) {
-                newAnnouncements.push(`Ticket number ${ticketNumber.replace('-', ' ')}, please proceed to ${counterName}.`);
+        for (const [ticketNumber, data] of Object.entries(currentActiveData)) {
+            const prevData = previousActiveData[ticketNumber];
+            // Trigger if ticket is new OR if its calledAt timestamp changed (e.g., from a Recall action)
+            if (!prevData || prevData.calledAt !== data.calledAt) {
+                newAnnouncements.push(`Ticket number ${ticketNumber.replace('-', ' ')}, please proceed to ${data.counterName}.`);
             }
         }
         

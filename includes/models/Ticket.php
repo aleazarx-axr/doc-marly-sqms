@@ -10,6 +10,7 @@ class Ticket {
     public $counter_id;
 
     public $citizen_category;
+    public $requirements_checked;
     public $status;
     public $issued_at;
     public $called_at;
@@ -61,7 +62,7 @@ class Ticket {
     }
 
     public function getCurrentTicket($counterId) {
-        $query = "SELECT t.*, s.name as service_name 
+        $query = "SELECT t.*, s.name as service_name, s.requirements as service_requirements
                   FROM " . $this->table_name . " t
                   LEFT JOIN services s ON t.service_id = s.id
                   WHERE t.counter_id = ? 
@@ -98,30 +99,67 @@ class Ticket {
         return $stmt->execute();
     }
 
-    public function getWaitingList($serviceIds) {
-        if (empty($serviceIds)) return [];
+    public function recallTicket($ticketId) {
+        $query = "UPDATE " . $this->table_name . " SET called_at = CURRENT_TIMESTAMP WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
+    }
+
+    public function holdTicket($ticketId) {
+        $query = "UPDATE " . $this->table_name . " SET status = 'waiting', counter_id = NULL WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
+    }
+
+    public function transferTicket($ticketId, $newServiceId) {
+        // Logically we can leave counter_id as is or NULL, but setting it to NULL makes it wait globally
+        // However, if we leave status as 'waiting', it gets picked up by the next available counter for the new service.
+        $query = "UPDATE " . $this->table_name . " SET service_id = :service_id, status = 'waiting', counter_id = NULL WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':service_id', $newServiceId);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
+    }
+
+    public function getWaitingList($serviceIds = null) {
+        if ($serviceIds !== null && empty($serviceIds)) return [];
         
-        $placeholders = str_repeat('?,', count($serviceIds) - 1) . '?';
         $query = "SELECT t.*, s.name as service_name 
                   FROM " . $this->table_name . " t
                   LEFT JOIN services s ON t.service_id = s.id
-                  WHERE t.status = 'waiting' 
-                  AND t.service_id IN ($placeholders)
-                  ORDER BY t.issued_at ASC";
+                  WHERE t.status = 'waiting'";
+                  
+        if ($serviceIds !== null) {
+            $placeholders = str_repeat('?,', count($serviceIds) - 1) . '?';
+            $query .= " AND t.service_id IN ($placeholders)";
+        }
+        
+        $query .= " ORDER BY t.issued_at ASC";
                   
         $stmt = $this->conn->prepare($query);
-        $stmt->execute($serviceIds);
+        
+        if ($serviceIds !== null) {
+            $stmt->execute($serviceIds);
+        } else {
+            $stmt->execute();
+        }
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function createTicket($name, $service_id, $citizen_category) {
         $today = date('Y-m-d');
         
+        $todayStart = $today . ' 00:00:00';
+        $todayEnd = $today . ' 23:59:59';
+        
         $queryNum = "SELECT ticket_number FROM " . $this->table_name . " 
-                     WHERE service_id = ? AND DATE(created_at) = ? 
+                     WHERE service_id = ? AND created_at >= ? AND created_at <= ?
                      ORDER BY id DESC LIMIT 1";
         $stmtNum = $this->conn->prepare($queryNum);
-        $stmtNum->execute([$service_id, $today]);
+        $stmtNum->execute([$service_id, $todayStart, $todayEnd]);
         $lastTicket = $stmtNum->fetch(PDO::FETCH_ASSOC);
         
         $nextNum = 1;
@@ -147,6 +185,14 @@ class Ticket {
             return $ticket_number;
         }
         return false;
+    }
+
+    public function updateRequirementsChecked($ticketId, $requirementsCheckedJson) {
+        $query = "UPDATE " . $this->table_name . " SET requirements_checked = :reqs WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':reqs', $requirementsCheckedJson);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
     }
 }
 ?>

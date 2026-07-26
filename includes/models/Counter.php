@@ -18,28 +18,29 @@ class Counter {
 
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-                  (name, counter_type, staff_id, overflow_general) 
-                  VALUES (:name, :counter_type, :staff_id, :overflow_general)";
+                  (name, counter_type, overflow_general) 
+                  VALUES (:name, :counter_type, :overflow_general)";
         $stmt = $this->conn->prepare($query);
 
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->counter_type = htmlspecialchars(strip_tags($this->counter_type));
-        $this->staff_id = !empty($this->staff_id) ? htmlspecialchars(strip_tags($this->staff_id)) : null;
         $this->overflow_general = htmlspecialchars(strip_tags($this->overflow_general));
 
         $stmt->bindParam(':name', $this->name);
         $stmt->bindParam(':counter_type', $this->counter_type);
-        $stmt->bindParam(':staff_id', $this->staff_id);
+
         $stmt->bindParam(':overflow_general', $this->overflow_general);
 
         return $stmt->execute();
     }
 
     public function read() {
-        $query = "SELECT c.*, u.username as staff_name 
+        $query = "SELECT c.*, GROUP_CONCAT(u.username SEPARATOR ', ') as staff_name 
                   FROM " . $this->table_name . " c
-                  LEFT JOIN users u ON c.staff_id = u.id
+                  LEFT JOIN counter_staff cs ON c.id = cs.counter_id
+                  LEFT JOIN users u ON cs.staff_id = u.id
                   WHERE c.is_archived = 0
+                  GROUP BY c.id
                   ORDER BY c.name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -47,10 +48,12 @@ class Counter {
     }
 
     public function readArchived() {
-        $query = "SELECT c.*, u.username as staff_name 
+        $query = "SELECT c.*, GROUP_CONCAT(u.username SEPARATOR ', ') as staff_name 
                   FROM " . $this->table_name . " c
-                  LEFT JOIN users u ON c.staff_id = u.id
+                  LEFT JOIN counter_staff cs ON c.id = cs.counter_id
+                  LEFT JOIN users u ON cs.staff_id = u.id
                   WHERE c.is_archived = 1
+                  GROUP BY c.id
                   ORDER BY c.name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -67,7 +70,7 @@ class Counter {
         if ($row) {
             $this->name = $row['name'];
             $this->counter_type = $row['counter_type'];
-            $this->staff_id = $row['staff_id'];
+            $this->staff_id = null; // Deprecated, fetch via getCounterStaff()
             $this->overflow_general = $row['overflow_general'];
             $this->is_active = $row['is_active'];
             return true;
@@ -78,20 +81,19 @@ class Counter {
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
                   SET name = :name, counter_type = :counter_type, 
-                      staff_id = :staff_id, 
                       overflow_general = :overflow_general
                   WHERE id = :id";
         $stmt = $this->conn->prepare($query);
 
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->counter_type = htmlspecialchars(strip_tags($this->counter_type));
-        $this->staff_id = !empty($this->staff_id) ? htmlspecialchars(strip_tags($this->staff_id)) : null;
+
         $this->overflow_general = htmlspecialchars(strip_tags($this->overflow_general));
         $this->id = htmlspecialchars(strip_tags($this->id));
 
         $stmt->bindParam(':name', $this->name);
         $stmt->bindParam(':counter_type', $this->counter_type);
-        $stmt->bindParam(':staff_id', $this->staff_id);
+
         $stmt->bindParam(':overflow_general', $this->overflow_general);
         $stmt->bindParam(':id', $this->id);
 
@@ -125,11 +127,40 @@ class Counter {
         return $stmt->rowCount() > 0;
     }
     public function getCountersByStaff($staffId) {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE staff_id = :staff_id AND is_archived = 0 AND is_active = 1";
+        $query = "SELECT c.*, u.username as current_staff_username 
+                  FROM " . $this->table_name . " c 
+                  JOIN counter_staff cs ON c.id = cs.counter_id
+                  LEFT JOIN users u ON c.current_staff_id = u.id
+                  WHERE cs.staff_id = :staff_id AND c.is_archived = 0 AND c.is_active = 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':staff_id', $staffId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function lockCounter($counterId, $staffId) {
+        // First unlock any other counter this staff might have locked
+        $this->unlockCounter($staffId);
+        
+        $query = "UPDATE " . $this->table_name . " SET current_staff_id = :staff_id WHERE id = :counter_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':staff_id', $staffId);
+        $stmt->bindParam(':counter_id', $counterId);
+        return $stmt->execute();
+    }
+
+    public function unlockCounter($staffId) {
+        $query = "UPDATE " . $this->table_name . " SET current_staff_id = NULL WHERE current_staff_id = :staff_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':staff_id', $staffId);
+        return $stmt->execute();
+    }
+
+    public function forceUnlockCounter($counterId) {
+        $query = "UPDATE " . $this->table_name . " SET current_staff_id = NULL WHERE id = :counter_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':counter_id', $counterId);
+        return $stmt->execute();
     }
 
     public function getCounterServices($counterId) {
@@ -143,6 +174,38 @@ class Counter {
             $serviceIds[] = $row['service_id'];
         }
         return $serviceIds;
+    }
+
+    public function getCounterStaff($counterId) {
+        $query = "SELECT staff_id FROM counter_staff WHERE counter_id = :counter_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':counter_id', $counterId);
+        $stmt->execute();
+        
+        $staffIds = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $staffIds[] = $row['staff_id'];
+        }
+        return $staffIds;
+    }
+
+    public function saveStaffAssignments($counterId, $staffIds) {
+        // First delete existing assignments
+        $delQuery = "DELETE FROM counter_staff WHERE counter_id = :counter_id";
+        $delStmt = $this->conn->prepare($delQuery);
+        $delStmt->bindParam(':counter_id', $counterId);
+        $delStmt->execute();
+
+        // Insert new assignments
+        if (!empty($staffIds)) {
+            $insQuery = "INSERT INTO counter_staff (counter_id, staff_id) VALUES (:counter_id, :staff_id)";
+            $insStmt = $this->conn->prepare($insQuery);
+            foreach ($staffIds as $staffId) {
+                $insStmt->bindValue(':counter_id', $counterId);
+                $insStmt->bindValue(':staff_id', $staffId);
+                $insStmt->execute();
+            }
+        }
     }
 }
 ?>

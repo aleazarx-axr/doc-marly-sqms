@@ -1,5 +1,25 @@
 <?php
 // Main display page - No refresh here!
+// Simple API to get latest videos without refreshing the page
+if (isset($_GET['api']) && $_GET['api'] === 'videos') {
+    $videoDir = __DIR__ . '/assets/videos';
+    $videos = [];
+    if (is_dir($videoDir)) {
+        $files = scandir($videoDir);
+        foreach ($files as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'mp4') {
+                $mtime = filemtime($videoDir . '/' . $file);
+                $videos[] = '/assets/videos/' . $file . '?v=' . $mtime;
+            }
+        }
+    }
+    if (empty($videos)) {
+        $videos[] = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    }
+    header('Content-Type: application/json');
+    echo json_encode($videos);
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -123,23 +143,34 @@
         document.getElementById('datetime').textContent = new Date().toLocaleString();
 
         // Video Looper
-        const videos = <?= json_encode($videos) ?>;
         const videoElement = document.getElementById('promoVideo');
         
-        // If there's only 1 video, just tell the browser to loop it natively
-        if (videos.length === 1) {
-            videoElement.loop = true;
-        }
-
+        let videos = [];
         let currentIndex = 0;
 
-        function playNextVideo() {
-            if (videos.length === 0) return;
-            
-            // If there is only 1 video, the native loop handles it.
-            // But we still need to start it the first time.
-            if (videos.length === 1 && currentIndex > 0) return;
+        async function fetchVideos() {
+            try {
+                const response = await fetch('/display.php?api=videos');
+                if (response.ok) {
+                    videos = await response.json();
+                }
+            } catch (error) {
+                console.error("Failed to fetch videos:", error);
+            }
+        }
 
+        async function playNextVideo() {
+            await fetchVideos(); // Always get the latest list before playing next
+
+            if (videos.length === 0) return;
+
+            // If the current index is somehow out of bounds because videos were deleted
+            if (currentIndex >= videos.length) {
+                currentIndex = 0;
+            }
+
+            videoElement.loop = (videos.length === 1); // Native loop if only 1 video
+            
             videoElement.src = videos[currentIndex];
             videoElement.currentTime = 0; // Force rewind just in case
             videoElement.play().catch(e => console.log('Autoplay blocked:', e));
@@ -152,6 +183,12 @@
 
         // When current video ends, play the next one
         videoElement.addEventListener('ended', playNextVideo);
+        
+        // Also skip to next if there is an error playing (e.g. unsupported format)
+        videoElement.addEventListener('error', () => {
+            console.error("Error playing video:", videoElement.src);
+            setTimeout(playNextVideo, 2000); // Try next after 2s
+        });
         
         // Start playing the first video
         playNextVideo();

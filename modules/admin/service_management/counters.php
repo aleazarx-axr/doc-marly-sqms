@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($_POST['id'])) $c->id = $_POST['id'];
             $c->name = $_POST['name'];
             $c->counter_type = $_POST['counter_type'];
-            $c->staff_id = !empty($_POST['staff_id']) ? $_POST['staff_id'] : null;
+            // We no longer use the single staff_id property on Counter.
             $c->overflow_general = !empty($_POST['overflow_general']) ? 1 : 0;
             
             if ($c->nameExists()) {
@@ -50,6 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $assignedServices = $_POST['assigned_services'] ?? [];
                     $cs = new CounterService($conn);
                     $cs->saveAssignments($c->id, $assignedServices);
+                }
+                // Save assigned staff
+                if ($success) {
+                    $staffIds = $_POST['staff_ids'] ?? [];
+                    $c->saveStaffAssignments($c->id, $staffIds);
                 }
                 $redirectUrl = "/admin/counters" . (isset($_GET['view']) && $_GET['view'] === 'archived' ? '?view=archived' : '');
                 header("Location: $redirectUrl");
@@ -130,9 +135,9 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
         <h2><?php echo $view === 'archived' ? 'Archived Counters' : 'Manage Counters'; ?></h2>
         <div>
             <?php if ($view === 'archived'): ?>
-                <a href="counters.php" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Counters</a>
+                <a href="/admin/counters" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Counters</a>
             <?php else: ?>
-                <a href="counters.php?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
+                <a href="/admin/counters?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
                 <button onclick="openCounterModal()">Add New Counter</button>
             <?php endif; ?>
         </div>
@@ -206,7 +211,8 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                                         <button type="submit">Restore</button>
                                     </form>
                                 <?php else: ?>
-                                    <button onclick='openCounterModal(<?php echo json_encode($c); ?>, <?php echo json_encode($counterCategories[$c['id']] ?? []); ?>, <?php echo json_encode($assigned); ?>)'>
+                                    <?php $assignedStaff = $counterModel->getCounterStaff($c['id']); ?>
+                                    <button onclick='openCounterModal(<?php echo json_encode($c); ?>, <?php echo json_encode($counterCategories[$c['id']] ?? []); ?>, <?php echo json_encode($assigned); ?>, <?php echo json_encode($assignedStaff); ?>)'>
                                         Edit
                                     </button>
                                     <!-- Archive Form -->
@@ -259,13 +265,15 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
         </div>
         
         <div style="margin-bottom: 10px;">
-            <label>Staff:</label><br>
-            <select id="c_staff" name="staff_id">
-                <option value="">-- Unassigned --</option>
+            <label>Assigned Staff:</label><br>
+            <div style="border: 1px solid #ccc; padding: 10px; max-height: 150px; overflow-y: auto;">
                 <?php foreach($staffList as $st): ?>
-                    <option value="<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['username']); ?></option>
+                <div>
+                    <input class="c-staff-cb" type="checkbox" value="<?php echo $st['id']; ?>" name="staff_ids[]" id="assign_staff_<?php echo $st['id']; ?>">
+                    <label for="assign_staff_<?php echo $st['id']; ?>"><?php echo htmlspecialchars($st['username']); ?></label>
+                </div>
                 <?php endforeach; ?>
-            </select>
+            </div>
         </div>
 
         <!-- Priority specific fields -->
@@ -308,10 +316,11 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 <script>
 
     /* MODAL TRIGGERS */
-    function openCounterModal(c = null, cats = [], assigned = []) {
+    function openCounterModal(c = null, cats = [], assigned = [], assignedStaff = []) {
         document.getElementById('counterForm').reset();
         document.querySelectorAll('.c-cat').forEach(cb => cb.checked = false);
         document.querySelectorAll('.c-assign').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.c-staff-cb').forEach(cb => cb.checked = false);
         
         if (c) {
             document.getElementById('counterModalTitle').innerText = 'Edit Counter';
@@ -319,7 +328,6 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
             document.getElementById('c_name').value = c.name;
 
             document.getElementById('c_type').value = c.counter_type;
-            document.getElementById('c_staff').value = c.staff_id || '';
             document.getElementById('c_overflow').checked = c.overflow_general == 1;
             
             if (cats && cats.length) {
@@ -331,6 +339,11 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                 document.querySelectorAll('.c-assign').forEach(cb => {
                     // assigned is an array of IDs (strings or ints)
                     if (assigned.includes(cb.value) || assigned.includes(parseInt(cb.value))) cb.checked = true;
+                });
+            }
+            if (assignedStaff && assignedStaff.length) {
+                document.querySelectorAll('.c-staff-cb').forEach(cb => {
+                    if (assignedStaff.includes(cb.value) || assignedStaff.includes(parseInt(cb.value))) cb.checked = true;
                 });
             }
         } else {

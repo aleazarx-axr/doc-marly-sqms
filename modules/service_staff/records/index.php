@@ -14,53 +14,33 @@ $ticketModel = new Ticket($conn);
 $counterModel = new Counter($conn);
 
 $records = [];
-if ($role !== 'admin') {
+if ($role === 'admin' || $role === 'information_staff') {
     header("Location: /");
     exit();
 }
 
-$stmtRecords = $ticketModel->readAllRecords();
-$records = $stmtRecords->fetchAll(PDO::FETCH_ASSOC);
+$staffCounters = $counterModel->getCountersByStaff($userId);
+$counterIds = array_column($staffCounters, 'id');
+if (!empty($counterIds)) {
+    $stmtRecords = $ticketModel->readRecordsByCounters($counterIds);
+    if ($stmtRecords) {
+        $records = $stmtRecords->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
 
-$pageTitle = 'Manage Records - Admin Portal';
+$pageTitle = 'Manage Records - Staff Portal';
 $activeMenu = 'records';
 
 require_once __DIR__ . '/../../../includes/header.php';
-require_once __DIR__ . '/../../../includes/sidebar_admin.php';
+require_once __DIR__ . '/../../../includes/sidebar_user.php';
 ?>
 
 <div class="main-content">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h2>Records</h2>
     </div>
-    <?php
-        $totalWaitTime = 0;
-        $waitCount = 0;
-        foreach ($records as $row) {
-            if (!empty($row['called_at']) && !empty($row['issued_at'])) {
-                $issued = strtotime($row['issued_at']);
-                $called = strtotime($row['called_at']);
-                if ($called >= $issued) {
-                    $totalWaitTime += ($called - $issued);
-                    $waitCount++;
-                }
-            }
-        }
-        $avgWaitSec = $waitCount > 0 ? floor($totalWaitTime / $waitCount) : 0;
-        $avgWaitMins = floor($avgWaitSec / 60);
-        $avgWaitRem = $avgWaitSec % 60;
-        $avgWaitStr = sprintf("%02d:%02d", $avgWaitMins, $avgWaitRem);
-    ?>
-    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px;">
-            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #64748b;">Avg Waiting Time</h3>
-            <div style="font-size: 28px; font-weight: bold; color: #0f172a;"><?= $avgWaitStr ?> <span style="font-size: 14px; font-weight: normal; color: #64748b;">(min:sec)</span></div>
-        </div>
-        <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px;">
-            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #64748b;">Total Tickets Issued</h3>
-            <div style="font-size: 28px; font-weight: bold; color: #0f172a;"><?= count($records) ?></div>
-        </div>
-    </div>
+    
+
     <div style="margin-bottom: 15px;">
         <label>Search by Name or Ticket No:</label>
         <input type="text" id="filterRecordInput" onkeyup="filterRecords()" placeholder="Type to search..." style="padding: 5px; width: 250px;">

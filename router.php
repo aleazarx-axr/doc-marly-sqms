@@ -25,7 +25,18 @@ $routes = [
     '/display_queue.php' => 'display_queue.php', // keep direct access for iframe
     '/setup.php' => 'setup.php',
     '/verify_otp.php' => 'verify_otp.php', // keeping original for login flows if any
-    '/staff/queue' => 'modules/staff/queue/index.php',
+    
+    // Role Dashboards
+    '/admin/dashboard' => 'modules/admin/dashboard.php',
+    '/information_staff/dashboard' => 'modules/information_staff/index.php',
+    
+    // Service Staff (was staff/queue)
+    '/service_staff/queue' => 'modules/service_staff/queue/index.php',
+    '/service_staff/records' => 'modules/service_staff/records/index.php',
+    '/api/service_staff/waiting_list' => 'api/service_staff/waiting_list.php',
+    '/api/information_staff/recent_tickets' => 'api/information_staff/recent_tickets.php',
+
+    // Admin Modules
     '/admin/services' => 'modules/admin/service_management/services.php',
     '/admin/counters' => 'modules/admin/service_management/counters.php',
     '/admin/media' => 'modules/admin/media/index.php',
@@ -35,6 +46,11 @@ $routes = [
     '/admin/users/archive' => 'modules/admin/users/archive.php',
     '/admin/users/restore' => 'modules/admin/users/restore.php',
     '/admin/users/resend_setup' => 'modules/admin/users/resend_setup.php',
+    '/admin/records' => 'modules/admin/records/index.php',
+    '/admin/settings' => 'modules/admin/settings/index.php',
+    '/admin/logs' => 'modules/admin/logs/index.php',
+    
+    '/profile' => 'profile.php',
 ];
 
 if (array_key_exists($request_uri, $routes)) {

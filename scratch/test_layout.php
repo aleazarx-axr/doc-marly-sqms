@@ -1,0 +1,1 @@
+<?php require_once 'config/database.php'; require_once 'includes/functions.php'; Session::start(); Session::set('user_id', 1); Session::set('role', 'admin'); ob_start(); require 'modules/admin/dashboard.php'; file_put_contents('scratch\rendered.html', ob_get_clean()); ?>

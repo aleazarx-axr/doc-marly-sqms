@@ -60,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Establish full session
             Session::remove('pending_otp_user_id');
             Session::set('user_id', $user->id);
+            Session::set('name', $user->name);
             Session::set('username', $user->username);
             Session::set('role', $user->role);
             Session::set('last_activity', time());

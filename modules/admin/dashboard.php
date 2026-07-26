@@ -1,32 +1,50 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Ticket.php';
+require_once __DIR__ . '/../../includes/models/Counter.php';
 
 Session::requireLogin();
+$userId = Session::get('user_id');
 $role = Session::get('role');
 
-if ($role === 'admin') {
-    header("Location: /admin/dashboard");
-    exit();
-} elseif ($role === 'information_staff') {
-    header("Location: /information_staff/dashboard");
-    exit();
-} else {
-    // Service Staff (or default staff)
-    header("Location: /service_staff/queue");
+$db = new Database();
+$conn = $db->getConnection();
+$ticketModel = new Ticket($conn);
+$counterModel = new Counter($conn);
+
+$serviceIds = [];
+$waitingList = [];
+$currentTicket = null;
+$currentCounter = null;
+
+if ($role !== 'admin') {
+    header("Location: /");
     exit();
 }
-<<<<<<< HEAD
 
-$pageTitle = ($role === 'admin') ? 'Admin Dashboard - Doc Marly SQMS' : 'Staff Dashboard - Doc Marly SQMS';
+// Fetch counts for Admin Dashboard
+$stmt = $conn->query("SELECT COUNT(*) as count FROM services WHERE is_archived = 0");
+$servicesCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+$stmt = $conn->query("SELECT COUNT(*) as count FROM counters WHERE is_archived = 0");
+$countersCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+$stmt = $conn->query("SELECT COUNT(*) as count FROM users");
+$usersCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+$stmt = $conn->query("SELECT COUNT(*) as count FROM tickets");
+$recordsCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+// Fetch recent tickets for Queue Monitoring
+$stmt = $conn->query("SELECT t.ticket_number, s.name as service_name, t.status FROM tickets t LEFT JOIN services s ON t.service_id = s.id ORDER BY t.issued_at DESC LIMIT 5");
+$recentTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$pageTitle = 'Admin Dashboard - Doc Marly SQMS';
 $activeMenu = 'dashboard';
 
-require_once __DIR__ . '/includes/header.php';
-
-if ($role === 'admin') {
-    require_once __DIR__ . '/includes/sidebar_admin.php';
-} else {
-    require_once __DIR__ . '/includes/sidebar_user.php';
-}
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar_admin.php';
 ?>
 
 <style>
@@ -638,35 +656,33 @@ if ($role === 'admin') {
         display: inline-block;
         margin: 0 1px;
     }
+    
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-ticket, #printable-ticket * {
+            visibility: visible;
+        }
+        #printable-ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 300px;
+            text-align: center;
+        }
+    }
 </style>
 
 <div class="main-content">
     <div class="header-section">
         <div>
             <h1><?php echo ($role === 'admin') ? 'Admin Portal' : 'Staff Portal'; ?></h1>
-            <h2>Welcome back, <?php echo htmlspecialchars(Session::get('username') ?? 'User'); ?></h2>
-
-            <?php if ($role !== 'admin' && $currentCounter): ?>
-                <div class="d-inline-flex align-items-center gap-2 mt-3 px-3 py-1 bg-primary bg-opacity-10 text-primary rounded-pill fw-semibold" style="font-size: 13px;">
-                    <span class="d-inline-block rounded-circle bg-primary" style="width: 8px; height: 8px;"></span>
-                    Counter: <?= htmlspecialchars($currentCounter['name']) ?>
-                </div>
-            <?php elseif ($role === 'service_staff'): ?>
-                <div class="d-inline-flex align-items-center gap-2 mt-3 px-3 py-1 bg-danger bg-opacity-10 text-danger rounded-pill fw-semibold" style="font-size: 13px;">
-                    <span class="d-inline-block rounded-circle bg-danger" style="width: 8px; height: 8px;"></span>
-                    No assigned counter
-                </div>
-            <?php elseif ($role === 'information_staff'): ?>
-                <div style="display: inline-block; margin-top: 10px; padding: 5px 15px; background: #17a2b8; color: #fff; border-radius: 8px; font-weight: 600;">
-                    Information Kiosk
-                </div>
-            <?php endif; ?>
-        </div>
+            <h2>Welcome back, <?php echo htmlspecialchars(Session::get('name') ?: Session::get('username') ?: 'User'); ?></h2>
 
         <!-- Header info removed - clock is now floating -->
+        </div>
     </div>
-
-    <?php if ($role === 'admin'): ?>
         <!-- Top Cards for Admin -->
         <div class="dashboard-grid">
             <a href="/modules/admin/service_management/services.php" class="card">
@@ -751,189 +767,8 @@ if ($role === 'admin') {
                     </tbody>
                 </table>
             </div>
-        </div>
-    <?php elseif ($role === 'information_staff'): ?>
-        <!-- Information Staff Dashboard (Kiosk & Monitoring) -->
-        <?php if (isset($_GET['status']) && $_GET['status'] === 'issued'): ?>
-            <p style="color: green; background: #f0f9f0; padding: 10px; border: 1px solid green; margin-bottom: 15px;">
-                Ticket successfully issued!
-            </p>
-        <?php endif; ?>
-        
-        <div class="dashboard-grid" style="grid-template-columns: 1fr 2fr;">
-            <!-- Left: Ticket Issuance Form -->
-            <div class="card">
-                <h3>Issue New Ticket</h3>
-                <form method="POST" action="/">
-                    <input type="hidden" name="action" value="issue_ticket">
-                    
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Citizen Name (Optional):</label>
-                        <input type="text" name="name" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Leave blank for walk-in">
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Citizen Category:</label>
-                        <select name="citizen_category" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                            <option value="Regular">Regular</option>
-                            <option value="Senior Citizen">Senior Citizen</option>
-                            <option value="PWD">PWD</option>
-                            <option value="Pregnant">Pregnant</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 25px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Requested Service:</label>
-                        <select name="service_id" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                            <option value="">-- Select Service --</option>
-                            <?php foreach ($activeServices as $srv): ?>
-                                <option value="<?= $srv['id'] ?>"><?= htmlspecialchars($srv['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    
-                    <button type="submit" style="width: 100%; padding: 15px; background: #2a296f; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;">
-                        Issue Ticket
-                    </button>
-                </form>
-            </div>
-            
-            <!-- Right: Queue Monitoring -->
-            <div class="card">
-                <h3>Global Queue Monitoring</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ticket Number</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($recentTickets)): ?>
-                            <?php foreach ($recentTickets as $ticket): ?>
-                                <tr>
-                                    <td><strong><?= htmlspecialchars($ticket['ticket_number']) ?></strong></td>
-                                    <td><?= htmlspecialchars($ticket['service_name']) ?></td>
-                                    <td>
-                                        <?php if($ticket['status'] === 'waiting'): ?>
-                                            <span style="color: orange; font-weight: bold;">Waiting</span>
-                                        <?php elseif($ticket['status'] === 'called'): ?>
-                                            <span style="color: blue; font-weight: bold;">Called</span>
-                                        <?php elseif($ticket['status'] === 'serving'): ?>
-                                            <span style="color: green; font-weight: bold;">Serving</span>
-                                        <?php else: ?>
-                                            <span style="color: gray; font-weight: bold;"><?= ucfirst(htmlspecialchars($ticket['status'])) ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="3" style="text-align: center; color: #999; padding: 20px;">No active queue.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
             </div>
         </div>
-    <?php else: ?>
-        <!-- Service Staff Dashboard (Queue Management Integration) -->
-        <?php if ($currentCounter): ?>
-            <div class="row g-4 mb-4">
-                <!-- Current Serving Area -->
-                <div class="col-md-6">
-                    <div class="card card-staff text-center p-4 h-100 d-flex flex-column justify-content-between">
-                        <?php if ($currentTicket): ?>
-                            <div>
-                                <span class="nexus-badge badge-serving text-uppercase" style="font-size: 11px; letter-spacing: 0.05em; margin-bottom: 15px;">Currently <?= ucfirst($currentTicket['status']) ?></span>
-                                <div class="display-1 fw-bold text-primary lh-1 my-3" style="font-size: 72px; letter-spacing: -0.02em;">
-                                    <?= htmlspecialchars($currentTicket['ticket_number']) ?>
-                                </div>
-                                <p class="text-muted mt-2">
-                                    <strong class="text-dark fs-5"><?= htmlspecialchars($currentTicket['name'] ?? $currentTicket['citizen_category']) ?></strong><br>
-                                    <span class="fs-6"><?= htmlspecialchars($currentTicket['service_name']) ?></span>
-                                </p>
-                            </div>
-
-                            <form method="POST" class="mt-4 d-flex gap-2 justify-content-center">
-                                <?php if ($currentTicket['status'] === 'called'): ?>
-                                    <button type="submit" name="action" value="serve" class="btn btn-success px-4 py-2 fw-semibold">Serve Client</button>
-                                <?php elseif ($currentTicket['status'] === 'serving'): ?>
-                                    <button type="submit" name="action" value="done" class="btn btn-primary px-4 py-2 fw-semibold">Mark Done</button>
-                                <?php endif; ?>
-                                <button type="submit" name="action" value="no_show" class="btn btn-danger px-3 py-2 fw-semibold" onclick="return confirm('Mark this ticket as no-show?');">No Show</button>
-                            </form>
-                        <?php else: ?>
-                            <div class="py-4">
-                                <h3 class="text-muted mb-3">Ready to Call Next</h3>
-                                <div class="display-1 fw-bold text-secondary lh-1 my-3" style="font-size: 72px;">
-                                    ----
-                                </div>
-                                <p class="text-muted fs-6">The queue is ready for the next available ticket.</p>
-                            </div>
-                            <form method="POST" class="mt-3">
-                                <button type="submit" name="action" value="call_next" class="btn btn-primary px-4 py-3 fw-semibold w-100" style="max-width: 280px; <?php echo empty($waitingList) ? 'opacity: 0.5; cursor: not-allowed;' : ''; ?>" <?php echo empty($waitingList) ? 'disabled' : ''; ?>>
-                                    Call Next Client
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Up Next List -->
-                <div class="col-md-6">
-                    <div class="card card-staff p-4 h-100">
-                        <h3 class="d-flex justify-content-between align-items-center mt-0 mb-3">
-                            <span>Waiting List</span>
-                            <span class="nexus-badge bg-light text-dark"><?= count($waitingList) ?> in queue</span>
-                        </h3>
-                        <div class="overflow-auto" style="height: 340px; padding-right: 4px;">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Ticket No.</th>
-                                        <th>Name / Category</th>
-                                        <th>Service</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($waitingList)): ?>
-                                        <?php foreach ($waitingList as $ticket): ?>
-                                            <tr>
-                                                <td><strong class="text-dark"><?= htmlspecialchars($ticket['ticket_number']) ?></strong></td>
-                                                <td><?= htmlspecialchars($ticket['name'] ?? $ticket['citizen_category']) ?></td>
-                                                <td><span class="text-muted small"><?= htmlspecialchars($ticket['service_name']) ?></span></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="3" class="text-center text-muted py-5">No tickets currently waiting in queue.</td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-                // Auto-refresh the page every 10 seconds if we're NOT currently serving a ticket
-                <?php if (!$currentTicket): ?>
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 10000);
-                <?php endif; ?>
-            </script>
-        <?php else: ?>
-            <div class="card card-staff text-center p-5">
-                <p class="text-muted fs-6 mx-auto" style="max-width: 500px; line-height: 1.5;">
-                    Please contact an administrator to assign a counter to your account before you can manage queues.
-                </p>
-            </div>
-        <?php endif; ?>
-    <?php endif; ?>
 </div>
 
 <!-- ==========================================
@@ -1317,4 +1152,4 @@ if ($role === 'admin') {
     });
 </script>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

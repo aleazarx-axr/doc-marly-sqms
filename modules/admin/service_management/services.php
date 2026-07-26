@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Hardcode defaults for removed fields
             $serviceModel->description = '';
-            $serviceModel->prefix = '';
+            $serviceModel->prefix = substr(md5(uniqid()), 0, 8);
             $serviceModel->starting_number = 1;
             
             $serviceModel->id ? $serviceModel->update() : $serviceModel->create();
@@ -70,9 +70,9 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
         <h2><?php echo $view === 'archived' ? 'Archived Services' : 'Manage Services'; ?></h2>
         <div>
             <?php if ($view === 'archived'): ?>
-                <a href="services.php" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Services</a>
+                <a href="/admin/services" style="color: blue; text-decoration: underline; margin-right: 15px;">View Active Services</a>
             <?php else: ?>
-                <a href="services.php?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
+                <a href="/admin/services?view=archived" style="color: gray; text-decoration: underline; margin-right: 15px;">View Archives</a>
                 <button onclick="document.getElementById('addServiceForm').reset(); document.getElementById('serviceId').value=''; document.getElementById('formTitle').innerText='Add New Service'; document.getElementById('serviceFormContainer').style.display='block';">Add New Service</button>
             <?php endif; ?>
         </div>

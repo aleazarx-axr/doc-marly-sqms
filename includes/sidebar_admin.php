@@ -1,10 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin · Nexus</title>
 
     <!-- Bootstrap 5 + Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -267,9 +260,6 @@
             font-size: 2rem;
         }
     </style>
-</head>
-
-<body>
 
     <!-- Mobile Toggle -->
     <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
@@ -278,6 +268,7 @@
     <!-- Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
+    <!-- Main Flex Wrapper -->
     <div class="d-flex">
 
         <!-- ===== SIDEBAR ===== (mostly Bootstrap classes) -->
@@ -336,26 +327,41 @@
                         <i class="bi bi-people-fill"></i> User Management
                     </a>
                 </li>
-
-                <!-- Devices -->
+                
+                <!-- Activity Logs -->
                 <li class="nav-item mb-1">
-                    <a href="/development.php?menu=devices" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'devices') ? 'active' : ''; ?>">
-                        <i class="bi bi-device-hdd-fill"></i> Devices
+                    <a href="/admin/logs" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'logs') ? 'active' : ''; ?>">
+                        <i class="bi bi-journal-text"></i> Activity Logs
                     </a>
                 </li>
 
-                <!-- Media -->
+                <!-- Settings Dropdown -->
                 <li class="nav-item mb-1">
-                    <a href="/admin/media" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'media') ? 'active' : ''; ?>">
-                        <i class="bi bi-collection-play"></i> Media
-                    </a>
-                </li>
-
-                <!-- Settings -->
-                <li class="nav-item mb-1">
-                    <a href="/admin/settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'settings') ? 'active' : ''; ?>">
-                        <i class="bi bi-sliders2"></i> Settings
-                    </a>
+                    <div class="accordion accordion-flush" id="settingsMenu">
+                        <div class="accordion-item bg-transparent border-0">
+                            <h2 class="accordion-header" id="headingSettings">
+                                <button class="accordion-button accordion-button-custom <?php echo (isset($activeMenu) && in_array($activeMenu, ['profile', 'media', 'settings', 'devices'])) ? '' : 'collapsed'; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#settingsCollapse" style="padding: 0.65rem 1rem;">
+                                    <i class="bi bi-sliders2"></i> Settings
+                                </button>
+                            </h2>
+                            <div id="settingsCollapse" class="accordion-collapse collapse <?php echo (isset($activeMenu) && in_array($activeMenu, ['profile', 'media', 'settings', 'devices'])) ? 'show' : ''; ?>" data-bs-parent="#settingsMenu">
+                                <div class="accordion-body accordion-body-custom">
+                                    <a href="/profile" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'profile') ? 'active' : ''; ?>">
+                                        <i class="bi bi-person-fill"></i> Profile
+                                    </a>
+                                    <a href="/admin/media" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'media') ? 'active' : ''; ?>">
+                                        <i class="bi bi-collection-play"></i> Media
+                                    </a>
+                                    <a href="/development.php?menu=devices" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'devices') ? 'active' : ''; ?>">
+                                        <i class="bi bi-device-hdd-fill"></i> Devices
+                                    </a>
+                                    <a href="/admin/settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'settings') ? 'active' : ''; ?>">
+                                        <i class="bi bi-gear-fill"></i> Config
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
 
@@ -422,7 +428,4 @@
                 }
             });
         });
-    </script>
-</body>
-
-</html>
+    </script>
