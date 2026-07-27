@@ -2,5 +2,8 @@
 require 'config/database.php';
 $db = new Database();
 $conn = $db->getConnection();
-$stmt = $conn->query("SHOW CREATE TABLE tickets");
-print_r($stmt->fetch(PDO::FETCH_ASSOC));
+if ($conn) {
+    echo "OK\n";
+} else {
+    echo "FAIL\n";
+}

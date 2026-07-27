@@ -13,6 +13,10 @@ $conn = $db->getConnection();
 $ticketModel = new Ticket($conn);
 $counterModel = new Counter($conn);
 
+if (!$conn) {
+    die("Database connection failed. Please check your .env settings and ensure the database is running.");
+}
+
 $serviceIds = [];
 $waitingList = [];
 $currentTicket = null;

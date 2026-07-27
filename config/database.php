@@ -6,6 +6,7 @@ loadEnv(__DIR__ . '/../.env');
 class Database
 {
     private $host;
+    private $port;
     private $db_name;
     private $username;
     private $password;
@@ -14,6 +15,7 @@ class Database
     public function __construct()
     {
         $this->host = $_ENV['DB_HOST'] ?? "localhost";
+        $this->port = $_ENV['DB_PORT'] ?? "3306";
         $this->db_name = $_ENV['DB_NAME'] ?? "sqms_db";
         $this->username = $_ENV['DB_USER'] ?? "root";
         $this->password = $_ENV['DB_PASS'] ?? "";
@@ -24,7 +26,7 @@ class Database
         $this->conn = null;
 
         try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
+            $this->conn = new PDO("mysql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $exception) {
             echo "Connection error: " . $exception->getMessage();
