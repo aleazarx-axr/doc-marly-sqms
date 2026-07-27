@@ -10,6 +10,7 @@ Session::requireLogin();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doc Marly Smart Queueing Management System</title>
+    <link rel="icon" type="image/png" href="assets/images/marly1.ico">
 </head>
 <body>
     <h1>Welcome, <?php echo htmlspecialchars(Session::get('username') ?? 'User'); ?>!</h1>
