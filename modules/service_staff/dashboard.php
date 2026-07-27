@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/../../../includes/functions.php';
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../includes/models/Ticket.php';
-require_once __DIR__ . '/../../../includes/models/Counter.php';
-require_once __DIR__ . '/../../../includes/models/Service.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Ticket.php';
+require_once __DIR__ . '/../../includes/models/Counter.php';
+require_once __DIR__ . '/../../includes/models/Service.php';
 
 Session::requireLogin();
 $userId = Session::get('user_id');
@@ -132,11 +132,11 @@ unset($_SESSION['just_called']);
 $pageTitle = 'Queue Management - Staff Portal';
 $activeMenu = 'queue';
 
-require_once __DIR__ . '/../../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 if ($role === 'admin') {
-    require_once __DIR__ . '/../../../includes/sidebar_admin.php';
+    require_once __DIR__ . '/../../includes/sidebar_admin.php';
 } else {
-    require_once __DIR__ . '/../../../includes/sidebar_user.php';
+    require_once __DIR__ . '/../../includes/sidebar_user.php';
 }
 ?>
 <div class="main-content">
@@ -363,4 +363,4 @@ setInterval(function() {
 
 
 
-<?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

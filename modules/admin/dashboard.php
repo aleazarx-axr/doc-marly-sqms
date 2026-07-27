@@ -711,7 +711,7 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
                     </div>
                 </div>
             </a>
-            <a href="/modules/admin/users/index.php" class="card">
+            <a href="/modules/admin/user_management/index.php" class="card">
                 <div class="card-content-wrapper">
                     <div class="card-left">
                         <h3>Total Users</h3>
