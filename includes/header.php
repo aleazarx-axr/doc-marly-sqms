@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? $pageTitle : 'Doc Marly SQMS'; ?></title>
+    <link rel="icon" type="image/png" href="assets/images/marly1.ico">
     <style>
         body { font-family: sans-serif; font-size: 14px; line-height: 18px; margin: 0; padding: 0; display: flex; height: 100vh; color: #333; }
         
