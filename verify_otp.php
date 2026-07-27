@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="error-msg" style="display: none;"></div>
             <?php endif; ?>
 
-            <form action="verify_otp.php" method="POST" autocomplete="off">
+            <form action="/verify" method="POST" autocomplete="off">
                 <div class="input-group">
                     <label for="otp_code"><i style="margin-right: 6px;"></i> 6-Digit Code</label>
                     <div class="input-wrapper">
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             
             <div style="text-align: center; margin-top: 20px;">
-                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Didn't receive the code? <a href="verify_otp.php?action=resend" style="color: #3498db; text-decoration: underline;">Resend</a></p>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Didn't receive the code? <a href="/verify?action=resend" style="color: #3498db; text-decoration: underline;">Resend</a></p>
                 <a href="login.php" style="color: #666; text-decoration: underline; font-size: 14px;">Back to Login</a>
             </div>
         </div>

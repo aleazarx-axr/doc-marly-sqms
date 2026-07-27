@@ -25,7 +25,7 @@ $routes = [
     '/display_queue.php' => 'display_queue.php', // keep direct access for iframe
     '/setup.php' => 'setup.php',
     '/verify_otp.php' => 'verify_otp.php', // keeping original for login flows if any
-    
+    '/verify' => 'verify_otp.php',    
     // Role Dashboards
     '/admin/dashboard' => 'modules/admin/dashboard.php',
     '/information_staff/dashboard' => 'modules/information_staff/index.php',

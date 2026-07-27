@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // Set pending session
                             Session::set('pending_otp_user_id', $user->id);
                             
-                            header("Location: /verify_otp.php");
+                            header("Location: /verify");
                             exit();
                         } else {
                             $error = 'Failed to generate security code. Please try again.';

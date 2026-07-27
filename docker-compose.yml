@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: sqms-app
+    ports:
+      # Map HTTP (8080) and HTTPS (8443) ports to avoid Windows conflicts
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      # Mount the entire codebase into the container
+      - .:/var/www/html
+    environment:
+      # Overrides the .env file so it connects to the Docker database
+      - DB_HOST=db
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: sqms-db
+    environment:
+      MYSQL_ROOT_PASSWORD: "xVtED0s^7@hh82bCv6"
+      MYSQL_DATABASE: sqms_db
+    volumes:
+      - db_data:/var/lib/mysql
+      # Initialize with the SQL dump
+      - ./doc_marly_sqms_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  db_data:
