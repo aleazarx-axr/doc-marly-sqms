@@ -1,0 +1,68 @@
+    :root {
+        --nexus-bg: #f8fafc;
+        --nexus-card-bg: #ffffff;
+        --nexus-primary: #242364;
+        --nexus-primary-hover: #242364;
+        --nexus-text-main: #0f172a;
+        --nexus-text-muted: #64748b;
+        --nexus-border: #e2e8f0;
+        --nexus-radius: 12px;
+        --nexus-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    body {
+        background-color: var(--nexus-bg);
+        color: var(--nexus-text-main);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        padding-bottom: 80px;
+        /* Add padding for floating widget */
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        background: var(--nexus-card-bg);
+        padding: 24px 30px;
+        border-radius: var(--nexus-radius);
+        box-shadow: var(--nexus-shadow);
+        border: 1px solid var(--nexus-border);
+    }
+
+    .header-section h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--nexus-text-main);
+        margin: 0 0 4px 0;
+    }
+
+    .header-section h2 {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--nexus-text-muted);
+        margin: 0;
+    }
+        .card {
+        background: var(--nexus-card-bg);
+        border-radius: var(--nexus-radius);
+        padding: 24px;
+        box-shadow: var(--nexus-shadow);
+        border: 1px solid var(--nexus-border);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        cursor: pointer;
+        position: relative;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border-color: var(--nexus-primary);
+    }
+
+    .card:active {
+        transform: scale(0.98);
+    }
