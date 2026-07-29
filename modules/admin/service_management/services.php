@@ -69,6 +69,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/admin_service_management_services.css">
+
 <div class="main-content container-fluid px-4 py-4">
     <!-- PAGE HEADER WITH INTEGRATED SEARCH BAR AND ACTIONS -->
     <div class="header-section d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
