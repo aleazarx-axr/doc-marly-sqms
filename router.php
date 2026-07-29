@@ -28,10 +28,16 @@ $routes = [
     '/verify' => 'verify_otp.php',    
     // Role Dashboards
     '/admin/dashboard' => 'modules/admin/dashboard.php',
-    '/information_staff/dashboard' => 'modules/information_staff/index.php',
+    '/information_staff/dashboard' => 'modules/information_staff/dashboard.php',
+    '/information_staff/profile' => 'modules/information_staff/profile.php',
+    '/information_staff/live_display' => 'modules/information_staff/live_display.php',
+    '/information_staff/logout' => 'modules/information_staff/logout.php',
     
     // Service Staff (was staff/queue)
-    '/service_staff/queue' => 'modules/service_staff/queue/index.php',
+    '/service_staff/dashboard' => 'modules/service_staff/dashboard.php',
+    '/service_staff/profile' => 'modules/service_staff/profile.php',
+    '/service_staff/live_display' => 'modules/service_staff/live_display.php',
+    '/service_staff/logout' => 'modules/service_staff/logout.php',
     '/service_staff/records' => 'modules/service_staff/records/index.php',
     '/api/service_staff/waiting_list' => 'api/service_staff/waiting_list.php',
     '/api/information_staff/recent_tickets' => 'api/information_staff/recent_tickets.php',
@@ -39,16 +45,21 @@ $routes = [
     // Admin Modules
     '/admin/services' => 'modules/admin/service_management/services.php',
     '/admin/counters' => 'modules/admin/service_management/counters.php',
-    '/admin/media' => 'modules/admin/media/index.php',
-    '/admin/users' => 'modules/admin/users/index.php',
-    '/admin/users/add' => 'modules/admin/users/add.php',
-    '/admin/users/edit' => 'modules/admin/users/edit.php',
-    '/admin/users/archive' => 'modules/admin/users/archive.php',
-    '/admin/users/restore' => 'modules/admin/users/restore.php',
-    '/admin/users/resend_setup' => 'modules/admin/users/resend_setup.php',
-    '/admin/records' => 'modules/admin/records/index.php',
-    '/admin/settings' => 'modules/admin/settings/index.php',
-    '/admin/logs' => 'modules/admin/logs/index.php',
+    '/admin/records' => 'modules/admin/records.php',
+    '/admin/user_management' => 'modules/admin/user_management/index.php',
+    '/admin/user_management/add' => 'modules/admin/user_management/add.php',
+    '/admin/user_management/edit' => 'modules/admin/user_management/edit.php',
+    '/admin/user_management/archive' => 'modules/admin/user_management/archive.php',
+    '/admin/user_management/restore' => 'modules/admin/user_management/restore.php',
+    '/admin/user_management/resend_setup' => 'modules/admin/user_management/resend_setup.php',
+    '/admin/activity_logs' => 'modules/admin/activity_logs.php',
+    
+    '/admin/settings/profile' => 'modules/admin/settings/profile.php',
+    '/admin/settings/media' => 'modules/admin/settings/media.php',
+    '/admin/settings/config' => 'modules/admin/settings/config.php',
+    
+    '/admin/live_display' => 'modules/admin/live_display.php',
+    '/admin/logout' => 'modules/admin/logout.php',
     
     '/profile' => 'profile.php',
 ];

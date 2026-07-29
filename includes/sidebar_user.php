@@ -232,21 +232,24 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item mb-1">
-                    <a href="/" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : ''; ?>">
+                    <?php $role = Session::get('role') ?? 'service_staff'; ?>
+                    <a href="<?php echo "/$role/dashboard"; ?>" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : ''; ?>">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
 
+                <?php if ($role === 'service_staff'): ?>
                 <!-- Records -->
                 <li class="nav-item mb-1">
                     <a href="/service_staff/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
                     </a>
                 </li>
+                <?php endif; ?>
 
                 <!-- Profile -->
                 <li class="nav-item mb-1">
-                    <a href="/profile" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'profile') ? 'active' : ''; ?>">
+                    <a href="<?php echo "/$role/profile"; ?>" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'profile') ? 'active' : ''; ?>">
                         <i class="bi bi-person-fill"></i> Profile Settings
                     </a>
                 </li>
@@ -262,7 +265,7 @@
             </div>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item ">
-                    <a href="/display" target="_blank" class="nav-link-custom bg-warning text-dark">
+                    <a href="<?php echo "/$role/live_display"; ?>" target="_blank" class="nav-link-custom bg-warning text-dark">
                         <i class="bi bi-tv-fill text-danger"></i> Launch Live Display
                     </a>
                 </li>
@@ -270,7 +273,7 @@
 
             <!-- Spacer + logout -->
             <div class="mt-auto pt-3">
-                <form action="/logout" method="post">
+                <form action="<?php echo "/$role/logout"; ?>" method="post">
                     <button class="btn logout-btn w-100" type="submit">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>

@@ -1,8 +1,8 @@
 <?php
-require_once __DIR__ . '/../../../includes/functions.php';
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../includes/models/Ticket.php';
-require_once __DIR__ . '/../../../includes/models/Counter.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Ticket.php';
+require_once __DIR__ . '/../../includes/models/Counter.php';
 
 Session::requireLogin();
 $role = Session::get('role');
@@ -25,8 +25,8 @@ $records = $stmtRecords->fetchAll(PDO::FETCH_ASSOC);
 $pageTitle = 'Manage Records - Admin Portal';
 $activeMenu = 'records';
 
-require_once __DIR__ . '/../../../includes/header.php';
-require_once __DIR__ . '/../../../includes/sidebar_admin.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar_admin.php';
 ?>
 
 <div class="main-content">
@@ -154,4 +154,4 @@ function viewRecord(record) {
 }
 </script>
 
-<?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

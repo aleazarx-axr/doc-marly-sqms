@@ -288,7 +288,7 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item mb-1">
-                    <a href="/" class="nav-link-custom active">
+                    <a href="/admin/dashboard" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'dashboard') ? 'active' : ''; ?>">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
@@ -323,14 +323,14 @@
 
                 <!-- Users -->
                 <li class="nav-item mb-1">
-                    <a href="/admin/users" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
+                    <a href="/admin/user_management" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'users') ? 'active' : ''; ?>">
                         <i class="bi bi-people-fill"></i> User Management
                     </a>
                 </li>
                 
                 <!-- Activity Logs -->
                 <li class="nav-item mb-1">
-                    <a href="/admin/logs" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'logs') ? 'active' : ''; ?>">
+                    <a href="/admin/activity_logs" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'logs') ? 'active' : ''; ?>">
                         <i class="bi bi-journal-text"></i> Activity Logs
                     </a>
                 </li>
@@ -346,16 +346,14 @@
                             </h2>
                             <div id="settingsCollapse" class="accordion-collapse collapse <?php echo (isset($activeMenu) && in_array($activeMenu, ['profile', 'media', 'settings', 'devices'])) ? 'show' : ''; ?>" data-bs-parent="#settingsMenu">
                                 <div class="accordion-body accordion-body-custom">
-                                    <a href="/profile" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'profile') ? 'active' : ''; ?>">
+                                    <a href="/admin/settings/profile" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'profile') ? 'active' : ''; ?>">
                                         <i class="bi bi-person-fill"></i> Profile
                                     </a>
-                                    <a href="/admin/media" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'media') ? 'active' : ''; ?>">
+                                    <a href="/admin/settings/media" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'media') ? 'active' : ''; ?>">
                                         <i class="bi bi-collection-play"></i> Media
                                     </a>
-                                    <a href="/development.php?menu=devices" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'devices') ? 'active' : ''; ?>">
-                                        <i class="bi bi-device-hdd-fill"></i> Devices
-                                    </a>
-                                    <a href="/admin/settings" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'settings') ? 'active' : ''; ?>">
+
+                                    <a href="/admin/settings/config" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu === 'settings') ? 'active' : ''; ?>">
                                         <i class="bi bi-gear-fill"></i> Config
                                     </a>
                                 </div>
@@ -374,7 +372,7 @@
             </div>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item ">
-                    <a href="/display" target="_blank" class="nav-link-custom bg-warning text-dark">
+                    <a href="/admin/live_display" target="_blank" class="nav-link-custom bg-warning text-dark">
                         <i class="bi bi-tv-fill text-danger"></i> Launch Live Display
                     </a>
                 </li>
@@ -382,7 +380,7 @@
 
             <!-- Spacer + logout -->
             <div class="mt-auto pt-3">
-                <form action="/logout" method="post">
+                <form action="/admin/logout" method="post">
                     <button class="btn logout-btn w-100" type="submit">
                         <i class="bi bi-box-arrow-right"></i> Logout
                     </button>

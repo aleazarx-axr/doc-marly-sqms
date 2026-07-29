@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../includes/functions.php';
-require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
 
 Session::requireRole('admin');
 
@@ -30,8 +30,8 @@ $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $pageTitle = 'Activity Logs - Admin Portal';
 $activeMenu = 'logs';
 
-require_once __DIR__ . '/../../../includes/header.php';
-require_once __DIR__ . '/../../../includes/sidebar_admin.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar_admin.php';
 ?>
 
 <div class="main-content">
@@ -98,4 +98,4 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
     </div>
 </div>
 
-<?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

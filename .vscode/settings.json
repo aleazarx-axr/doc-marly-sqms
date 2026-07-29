@@ -1,3 +1,7 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "php-cs-fixer.config": "/full/config/file/path"
 }
+
+   
+

@@ -12,21 +12,11 @@ if ($role === 'admin') {
     exit();
 } else {
     // Service Staff (or default staff)
-    header("Location: /service_staff/queue");
+    header("Location: /service_staff/dashboard");
     exit();
 }
-
-$pageTitle = ($role === 'admin') ? 'Admin Dashboard - Doc Marly SQMS' : 'Staff Dashboard - Doc Marly SQMS';
-$activeMenu = 'dashboard';
-
-require_once __DIR__ . '/includes/header.php';
-
-if ($role === 'admin') {
-    require_once __DIR__ . '/includes/sidebar_admin.php';
-} else {
-    require_once __DIR__ . '/includes/sidebar_user.php';
-}
 ?>
+<<<<<<< HEAD
 
 
 
@@ -708,3 +698,5 @@ if ($role === 'admin') {
 </script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+=======
+>>>>>>> 64706bd58e4191c90cfe20f200ddb2dd3e204bd3
