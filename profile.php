@@ -71,36 +71,138 @@ if ($role === 'admin') {
 }
 ?>
 
-<div class="main-content">
-    <h2>Profile Settings</h2>
-    
-    <?php if ($message): ?>
-        <p style="color: green;"><strong><?php echo htmlspecialchars($message); ?></strong></p>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <p style="color: red;"><strong><?php echo htmlspecialchars($error); ?></strong></p>
-    <?php endif; ?>
+<div class="container py-4">
 
-    <form method="POST" action="/profile">
-        <div style="margin-bottom: 10px;">
-            <label>Name:</label><br>
-            <input type="text" name="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-5">
+ 
+        <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-person-circle me-2 text-primary"></i>
+                Profile Settings
+            </h3>
+            <small class="text-muted">
+                Update your personal information and password.
+            </small>
         </div>
-        <div style="margin-bottom: 10px;">
-            <label>Username (Required):</label><br>
-            <input type="text" name="username" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" required>
+
+        <div class="card-body p-4">
+
+            <?php if ($message): ?>
+                <div class="alert alert-success alert-dismissible fade show">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <?php echo htmlspecialchars($message); ?>
+                    <button class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($error): ?>
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <?php echo htmlspecialchars($error); ?>
+                    <button class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="/profile" class="rounded-5">
+
+                <div class="row">
+
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="col-12">
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="name"
+                                    value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>">
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Username
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="username"
+                                    value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>"
+                                    required>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                class="form-control"
+                                name="email"
+                                value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>">
+
+                        </div>
+
+                    
+
+                        <h6 class="fw-bold mb-3">
+                            Change Password
+                        </h6>
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                class="form-control"
+                                name="password"
+                                placeholder="Leave blank to keep your current password">
+
+                            <div class="form-text">
+                                Your password will only be changed if you enter a new one.
+                            </div>
+
+                        </div>
+
+                        <div class="text-end">
+
+                            <button class="btn btn-primary px-4">
+                                <i class="bi bi-floppy me-2"></i>
+                                Save Changes
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
         </div>
-        <div style="margin-bottom: 10px;">
-            <label>Email:</label><br>
-            <input type="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>">
-        </div>
-        <div style="margin-bottom: 15px;">
-            <label>New Password (leave blank to keep current):</label><br>
-            <input type="password" name="password">
-        </div>
-        <button type="submit">Save Changes</button>
-    </form>
+        
+    </div>
+
 </div>
-
 </body>
 </html>
