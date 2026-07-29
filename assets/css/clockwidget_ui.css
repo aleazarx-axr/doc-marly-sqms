@@ -1,0 +1,400 @@
+
+    /* ============================================
+       FLOATING CLOCK WIDGET - DRAGGABLE
+       ============================================ */
+    #floating-clock-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+        transition: opacity 0.3s ease;
+    }
+
+    #floating-clock-container:active {
+        cursor: grabbing;
+    }
+
+    /* Minimize toggle button */
+    #clock-toggle-btn {
+        position: absolute;
+        top: -12px;
+        right: -12px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #974859;
+        color: white;
+        border: 2px solid white;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        transition: transform 0.2s ease, background 0.2s ease;
+        padding: 0;
+        line-height: 1;
+    }
+
+    #clock-toggle-btn:hover {
+        transform: scale(1.1);
+        background: #a75265;
+    }
+
+    /* Minimized state */
+    #floating-clock-container.minimized .clock-widget {
+        transform: scale(0);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    #floating-clock-container.minimized {
+        width: 48px;
+        height: 48px;
+        background: #974859;
+        border-radius: 50%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        border: 2px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    #floating-clock-container.minimized #clock-toggle-btn {
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    #floating-clock-container.minimized .clock-widget {
+        display: none;
+    }
+
+    #floating-clock-container.minimized::after {
+        content: '🕐';
+        font-size: 24px;
+        color: white;
+    }
+
+    /* Clock Widget Styles (modified from original) */
+    .clock-widget {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 180px;
+        width: 280px;
+        border-radius: 25px;
+        background: lightgrey;
+        overflow: hidden;
+        transition: 100ms ease;
+        box-shadow: rgba(0, 0, 0, 0.25) 4px 6px 12px;
+        flex-shrink: 0;
+        position: relative;
+        pointer-events: auto;
+    }
+
+    .clock-widget .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(236, 114, 99, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 25px;
+    }
+
+    .clock-widget .loading-overlay.hidden {
+        display: none;
+    }
+
+    .clock-widget .info-section {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 75%;
+        color: white;
+    }
+
+    .clock-widget .bg-design {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background-color: #ec7263;
+        overflow: hidden;
+        transition: background-color 0.5s ease;
+    }
+
+    .clock-widget .bg-circle1 {
+        position: absolute;
+        top: -80%;
+        right: -50%;
+        width: 300px;
+        height: 300px;
+        opacity: 0.4;
+        border-radius: 50%;
+        background-color: #efc745;
+        transition: background-color 0.5s ease;
+    }
+
+    .clock-widget .bg-circle2 {
+        position: absolute;
+        top: -70%;
+        right: -30%;
+        width: 210px;
+        height: 210px;
+        opacity: 0.4;
+        border-radius: 50%;
+        background-color: #efc745;
+        transition: background-color 0.5s ease;
+    }
+
+    .clock-widget .bg-circle3 {
+        position: absolute;
+        top: -35%;
+        right: -8%;
+        width: 100px;
+        height: 100px;
+        opacity: 1;
+        border-radius: 50%;
+        background-color: #efc745;
+        transition: background-color 0.5s ease;
+    }
+
+    .clock-widget .left-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        height: 100%;
+        z-index: 1;
+        padding-left: 18px;
+    }
+
+    .clock-widget .right-side {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: space-around;
+        height: 100%;
+        padding-right: 18px;
+        z-index: 1;
+    }
+
+    .clock-widget .weather-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 5px;
+    }
+
+    .clock-widget .weather-icon {
+        display: flex;
+        align-items: center;
+        width: 40%;
+        height: auto;
+    }
+
+    .clock-widget .weather-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .clock-widget .temperature {
+        font-size: 34pt;
+        font-weight: 500;
+        line-height: 8%;
+    }
+
+    .clock-widget .temp-range {
+        font-size: 0.9rem;
+    }
+
+    /* Updated time display with 12-hour format and AM/PM */
+    .clock-widget .time-display {
+        font-size: 19pt;
+        line-height: 1em;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+    }
+
+    .clock-widget .time-hours-minutes {
+        display: flex;
+        align-items: baseline;
+    }
+
+    .clock-widget .seconds-display {
+        font-size: 11pt;
+        opacity: 0.8;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .clock-widget .ampm-display {
+        font-size: 10pt;
+        font-weight: 600;
+        opacity: 0.9;
+        letter-spacing: 0.5px;
+        margin-left: 4px;
+    }
+
+    .clock-widget .date-display {
+        font-size: 15px;
+    }
+
+    .clock-widget .location {
+        font-size: 0.9rem;
+    }
+
+    .clock-widget .days-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 25%;
+        background-color: #974859;
+        gap: 2px;
+        box-shadow: inset 0px 2px 5px #974859;
+    }
+
+    .clock-widget .day-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        background-color: #a75265;
+        box-shadow: inset 0px 2px 5px #974859;
+        cursor: pointer;
+        transition: 100ms ease;
+        gap: 5px;
+        border: none;
+        background: transparent;
+        background-color: #a75265;
+    }
+
+    .clock-widget .day-btn:hover {
+        transform: scale(0.9);
+        border-radius: 10px;
+    }
+
+    .clock-widget .day-btn span:first-child {
+        font-size: 10pt;
+        font-weight: 500;
+        color: white;
+        opacity: 0.7;
+    }
+
+    .clock-widget .day-btn .day-icon {
+        display: flex;
+        align-items: center;
+        width: 20px;
+        height: 100%;
+    }
+
+    .clock-widget .day-btn .day-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Weather condition colors - dynamic via JS */
+    .weather-sunny .bg-design {
+        background-color: #ec7263;
+    }
+
+    .weather-sunny .bg-circle1,
+    .weather-sunny .bg-circle2,
+    .weather-sunny .bg-circle3 {
+        background-color: #efc745;
+    }
+
+    .weather-cloudy .bg-design {
+        background-color: #8a9ba8;
+    }
+
+    .weather-cloudy .bg-circle1,
+    .weather-cloudy .bg-circle2,
+    .weather-cloudy .bg-circle3 {
+        background-color: #a8b8c4;
+    }
+
+    .weather-rainy .bg-design {
+        background-color: #5b7a8c;
+    }
+
+    .weather-rainy .bg-circle1,
+    .weather-rainy .bg-circle2,
+    .weather-rainy .bg-circle3 {
+        background-color: #7a9aaa;
+    }
+
+    .weather-snowy .bg-design {
+        background-color: #b8c6d4;
+    }
+
+    .weather-snowy .bg-circle1,
+    .weather-snowy .bg-circle2,
+    .weather-snowy .bg-circle3 {
+        background-color: #d4dce6;
+    }
+
+    .weather-stormy .bg-design {
+        background-color: #4a4a4a;
+    }
+
+    .weather-stormy .bg-circle1,
+    .weather-stormy .bg-circle2,
+    .weather-stormy .bg-circle3 {
+        background-color: #6a6a6a;
+    }
+
+    /* Time separator pulse animation */
+    @keyframes pulseOpacity {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.2;
+        }
+    }
+
+    .time-separator {
+        animation: pulseOpacity 1s step-end infinite;
+        display: inline-block;
+        margin: 0 1px;
+    }
+    
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-ticket, #printable-ticket * {
+            visibility: visible;
+        }
+        #printable-ticket {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 300px;
+            text-align: center;
+        }
+    }

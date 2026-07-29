@@ -68,742 +68,203 @@ require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/sidebar_user.php';
 ?>
 
-<style>
-    :root {
-        --nexus-bg: #f8fafc;
-        --nexus-card-bg: #ffffff;
-        --nexus-primary: #242364;
-        --nexus-primary-hover: #242364;
-        --nexus-text-main: #0f172a;
-        --nexus-text-muted: #64748b;
-        --nexus-border: #e2e8f0;
-        --nexus-radius: 12px;
-        --nexus-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    }
-
-    body {
-        background-color: var(--nexus-bg);
-        color: var(--nexus-text-main);
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        padding-bottom: 80px;
-        /* Add padding for floating widget */
-    }
-
-    .header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        background: var(--nexus-card-bg);
-        padding: 24px 30px;
-        border-radius: var(--nexus-radius);
-        box-shadow: var(--nexus-shadow);
-        border: 1px solid var(--nexus-border);
-    }
-
-    .header-section h1 {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--nexus-text-main);
-        margin: 0 0 4px 0;
-    }
-
-    .header-section h2 {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--nexus-text-muted);
-        margin: 0;
-    }
-
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .card {
-        background: var(--nexus-card-bg);
-        border-radius: var(--nexus-radius);
-        padding: 24px;
-        box-shadow: var(--nexus-shadow);
-        border: 1px solid var(--nexus-border);
-        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        cursor: pointer;
-        position: relative;
-        text-decoration: none;
-        display: block;
-        color: inherit;
-    }
-
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-        border-color: var(--nexus-primary);
-    }
-
-    .card:active {
-        transform: scale(0.98);
-    }
-
-    .card h3 {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--nexus-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin: 0;
-        pointer-events: none;
-    }
-
-    .card .value {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--nexus-text-main);
-        margin: 0;
-        pointer-events: none;
-    }
-
-    .card .card-link-hint {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--nexus-primary);
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        pointer-events: none;
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
-    }
-
-    .card:hover .card-link-hint {
-        opacity: 1;
-    }
-
-    .card-content-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        pointer-events: none;
-    }
-
-    .card-left {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        pointer-events: none;
-    }
-
-    .card-right {
-        flex-shrink: 0;
-        pointer-events: none;
-    }
-
-    /* Tables */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-    }
-
-    th {
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--nexus-text-muted);
-        background: #f8fafc;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--nexus-border);
-    }
-
-    td {
-        padding: 14px 16px;
-        font-size: 14px;
-        border-bottom: 1px solid var(--nexus-border);
-        color: var(--nexus-text-main);
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Badges */
-    .nexus-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        border-radius: 9999px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .badge-called {
-        background: #fef3c7;
-        color: #d97706;
-    }
-
-    .badge-serving {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
-
-    .badge-done {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .badge-default {
-        background: #f1f5f9;
-        color: #475569;
-    }
-
-    /* Buttons */
-    .btn {
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s ease, opacity 0.2s ease;
-        color: #fff;
-    }
-
-    .btn:hover {
-        opacity: 0.9;
-    }
-
-    .value-large {
-        font-size: 42px;
-        font-weight: 700;
-        color: var(--nexus-primary);
-        line-height: 1;
-    }
-
-    /* Staff card - non-clickable */
-    .card-staff {
-        cursor: default;
-    }
-
-    .card-staff:hover {
-        transform: none;
-        border-color: var(--nexus-border);
-    }
-
-    .card-staff:active {
-        transform: none;
-    }
-
-    /* ============================================
-       FLOATING CLOCK WIDGET - DRAGGABLE
-       ============================================ */
-    #floating-clock-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        cursor: grab;
-        user-select: none;
-        touch-action: none;
-        transition: opacity 0.3s ease;
-    }
-
-    #floating-clock-container:active {
-        cursor: grabbing;
-    }
-
-    /* Minimize toggle button */
-    #clock-toggle-btn {
-        position: absolute;
-        top: -12px;
-        right: -12px;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: #974859;
-        color: white;
-        border: 2px solid white;
-        font-size: 14px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        z-index: 10000;
-        transition: transform 0.2s ease, background 0.2s ease;
-        padding: 0;
-        line-height: 1;
-    }
-
-    #clock-toggle-btn:hover {
-        transform: scale(1.1);
-        background: #a75265;
-    }
-
-    /* Minimized state */
-    #floating-clock-container.minimized .clock-widget {
-        transform: scale(0);
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    #floating-clock-container.minimized {
-        width: 48px;
-        height: 48px;
-        background: #974859;
-        border-radius: 50%;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
-        border: 2px solid white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    #floating-clock-container.minimized #clock-toggle-btn {
-        top: -8px;
-        right: -8px;
-        width: 24px;
-        height: 24px;
-        font-size: 12px;
-    }
-
-    #floating-clock-container.minimized .clock-widget {
-        display: none;
-    }
-
-    #floating-clock-container.minimized::after {
-        content: '🕐';
-        font-size: 24px;
-        color: white;
-    }
-
-    /* Clock Widget Styles (modified from original) */
-    .clock-widget {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 180px;
-        width: 280px;
-        border-radius: 25px;
-        background: lightgrey;
-        overflow: hidden;
-        transition: 100ms ease;
-        box-shadow: rgba(0, 0, 0, 0.25) 4px 6px 12px;
-        flex-shrink: 0;
-        position: relative;
-        pointer-events: auto;
-    }
-
-    .clock-widget .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(236, 114, 99, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        color: white;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 25px;
-    }
-
-    .clock-widget .loading-overlay.hidden {
-        display: none;
-    }
-
-    .clock-widget .info-section {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        height: 75%;
-        color: white;
-    }
-
-    .clock-widget .bg-design {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ec7263;
-        overflow: hidden;
-        transition: background-color 0.5s ease;
-    }
-
-    .clock-widget .bg-circle1 {
-        position: absolute;
-        top: -80%;
-        right: -50%;
-        width: 300px;
-        height: 300px;
-        opacity: 0.4;
-        border-radius: 50%;
-        background-color: #efc745;
-        transition: background-color 0.5s ease;
-    }
-
-    .clock-widget .bg-circle2 {
-        position: absolute;
-        top: -70%;
-        right: -30%;
-        width: 210px;
-        height: 210px;
-        opacity: 0.4;
-        border-radius: 50%;
-        background-color: #efc745;
-        transition: background-color 0.5s ease;
-    }
-
-    .clock-widget .bg-circle3 {
-        position: absolute;
-        top: -35%;
-        right: -8%;
-        width: 100px;
-        height: 100px;
-        opacity: 1;
-        border-radius: 50%;
-        background-color: #efc745;
-        transition: background-color 0.5s ease;
-    }
-
-    .clock-widget .left-side {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        height: 100%;
-        z-index: 1;
-        padding-left: 18px;
-    }
-
-    .clock-widget .right-side {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: space-around;
-        height: 100%;
-        padding-right: 18px;
-        z-index: 1;
-    }
-
-    .clock-widget .weather-row {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 5px;
-    }
-
-    .clock-widget .weather-icon {
-        display: flex;
-        align-items: center;
-        width: 40%;
-        height: auto;
-    }
-
-    .clock-widget .weather-icon svg {
-        width: 32px;
-        height: 32px;
-    }
-
-    .clock-widget .temperature {
-        font-size: 34pt;
-        font-weight: 500;
-        line-height: 8%;
-    }
-
-    .clock-widget .temp-range {
-        font-size: 0.9rem;
-    }
-
-    /* Updated time display with 12-hour format and AM/PM */
-    .clock-widget .time-display {
-        font-size: 19pt;
-        line-height: 1em;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 1px;
-        display: flex;
-        align-items: baseline;
-        gap: 2px;
-    }
-
-    .clock-widget .time-hours-minutes {
-        display: flex;
-        align-items: baseline;
-    }
-
-    .clock-widget .seconds-display {
-        font-size: 11pt;
-        opacity: 0.8;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .clock-widget .ampm-display {
-        font-size: 10pt;
-        font-weight: 600;
-        opacity: 0.9;
-        letter-spacing: 0.5px;
-        margin-left: 4px;
-    }
-
-    .clock-widget .date-display {
-        font-size: 15px;
-    }
-
-    .clock-widget .location {
-        font-size: 0.9rem;
-    }
-
-    .clock-widget .days-section {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        height: 25%;
-        background-color: #974859;
-        gap: 2px;
-        box-shadow: inset 0px 2px 5px #974859;
-    }
-
-    .clock-widget .day-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        width: 100%;
-        background-color: #a75265;
-        box-shadow: inset 0px 2px 5px #974859;
-        cursor: pointer;
-        transition: 100ms ease;
-        gap: 5px;
-        border: none;
-        background: transparent;
-        background-color: #a75265;
-    }
-
-    .clock-widget .day-btn:hover {
-        transform: scale(0.9);
-        border-radius: 10px;
-    }
-
-    .clock-widget .day-btn span:first-child {
-        font-size: 10pt;
-        font-weight: 500;
-        color: white;
-        opacity: 0.7;
-    }
-
-    .clock-widget .day-btn .day-icon {
-        display: flex;
-        align-items: center;
-        width: 20px;
-        height: 100%;
-    }
-
-    .clock-widget .day-btn .day-icon svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Weather condition colors - dynamic via JS */
-    .weather-sunny .bg-design {
-        background-color: #ec7263;
-    }
-
-    .weather-sunny .bg-circle1,
-    .weather-sunny .bg-circle2,
-    .weather-sunny .bg-circle3 {
-        background-color: #efc745;
-    }
-
-    .weather-cloudy .bg-design {
-        background-color: #8a9ba8;
-    }
-
-    .weather-cloudy .bg-circle1,
-    .weather-cloudy .bg-circle2,
-    .weather-cloudy .bg-circle3 {
-        background-color: #a8b8c4;
-    }
-
-    .weather-rainy .bg-design {
-        background-color: #5b7a8c;
-    }
-
-    .weather-rainy .bg-circle1,
-    .weather-rainy .bg-circle2,
-    .weather-rainy .bg-circle3 {
-        background-color: #7a9aaa;
-    }
-
-    .weather-snowy .bg-design {
-        background-color: #b8c6d4;
-    }
-
-    .weather-snowy .bg-circle1,
-    .weather-snowy .bg-circle2,
-    .weather-snowy .bg-circle3 {
-        background-color: #d4dce6;
-    }
-
-    .weather-stormy .bg-design {
-        background-color: #4a4a4a;
-    }
-
-    .weather-stormy .bg-circle1,
-    .weather-stormy .bg-circle2,
-    .weather-stormy .bg-circle3 {
-        background-color: #6a6a6a;
-    }
-
-    /* Time separator pulse animation */
-    @keyframes pulseOpacity {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.2;
-        }
-    }
-
-    .time-separator {
-        animation: pulseOpacity 1s step-end infinite;
-        display: inline-block;
-        margin: 0 1px;
-    }
-    
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        #printable-ticket, #printable-ticket * {
-            visibility: visible;
-        }
-        #printable-ticket {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 300px;
-            text-align: center;
-        }
-    }
-</style>
+<link rel="stylesheet" href="/assets/css/information_staff.css">
+<link rel="stylesheet" href="/assets/css/clockwidget_ui.css">
 
 <div class="main-content">
-    <div class="header-section">
-        <div>
-            <h1>Staff Portal</h1>
-            <h2>Welcome back, <?php echo htmlspecialchars(Session::get('name') ?: Session::get('username') ?: 'User'); ?></h2>
-
-            <div style="display: inline-block; margin-top: 10px; padding: 5px 15px; background: #17a2b8; color: #fff; border-radius: 8px; font-weight: 600;">
-                Information Kiosk
-            </div>
+    <!-- ============================================
+   HEADER SECTION - Horizontal Profile Style
+   ============================================ -->
+<div class="header-section profile-horizontal">
+    <!-- Avatar -->
+    <div class="profile-avatar-wrapper">
+        <div class="profile-avatar">
+            <span class="avatar-text"><?php echo strtoupper(substr(Session::get('username') ?? 'U', 0, 2)); ?></span>
+            <span class="profile-status-dot online"></span>
         </div>
-
-        <!-- Header info removed - clock is now floating -->
     </div>
+    
+    <!-- Divider -->
+    <div class="profile-divider"></div>
+    
+    <!-- User Info -->
+    <div class="profile-info">
+        <div class="profile-name-wrapper">
+            <span class="profile-name"><?php echo htmlspecialchars(Session::get('username') ?? 'User'); ?></span>
+            <span class="profile-verified-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffde00" stroke="none">
+                    <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-4-3.82-4-1.285 0-2.43.615-3.12 1.54-.69-.925-1.835-1.54-3.12-1.54-2.11 0-3.82 1.79-3.82 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 .38.055.745.155 1.1-1.345.85-2.178 2.31-2.178 3.9 0 2.21 1.71 4 3.82 4 2.11 0 3.82-1.79 3.82-4 0-.38-.055-.745-.155-1.1 1.345-.85 2.178-2.31 2.178-3.9 0-.38-.055-.745-.155-1.1z"/>
+                </svg>
+            </span>
+        </div>
+        <div class="profile-role">
+            <span class="info-staff-badge-horizontal">Information Staff</span>
+        </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="profile-divider"></div>
+    
+    <!-- Stats -->
+    <div class="profile-stats-horizontal">
+        <div class="stat-item-horizontal">
+            <span class="stat-number-horizontal"><?php echo count($recentTickets ?? []); ?></span>
+            <span class="stat-label-horizontal">Tickets</span>
+        </div>
+        <div class="stat-item-horizontal">
+            <span class="stat-number-horizontal"><?php echo count($activeServices ?? []); ?></span>
+            <span class="stat-label-horizontal">Services</span>
+        </div>
+        <div class="stat-item-horizontal">
+            <span class="stat-number-horizontal" id="online-count">12</span>
+            <span class="stat-label-horizontal">Online</span>
+        </div>
+    </div>
+    
+    <!-- Divider -->
+    <div class="profile-divider"></div>
+    
+    <!-- Actions -->
+    <div class="profile-actions-horizontal">
+        <!-- <button class="profile-btn-horizontal" onclick="window.location.reload()" title="Refresh">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                <polyline points="21 3 21 9 15 9"/>
+            </svg>
+            <span>Refresh</span>
+        </button>
+        <button class="profile-btn-horizontal profile-btn-logout" onclick="window.location.href='/logout'" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Logout</span>
+        </button> -->
+    </div>
+</div>
 
-
+    <?php if ($role === 'information_staff'): ?>
         <!-- Information Staff Dashboard (Kiosk & Monitoring) -->
-        <?php if (isset($_GET['status'])): ?>
-            <?php if ($_GET['status'] === 'issued'): ?>
-                <div style="background: #f0f9f0; padding: 15px; border: 1px solid green; margin-bottom: 20px; border-radius: 8px;">
-                    <h3 style="color: green; margin-top:0;">Ticket successfully issued!</h3>
-                    <?php if (isset($_GET['ticket'])): ?>
-                        <div id="printable-ticket" style="border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 10px 0; background: #fff; width: 250px;">
-                            <h2 style="margin: 0;">Doc Marly SQMS</h2>
-                            <p style="margin: 5px 0 15px 0; font-size: 12px;">Queue Ticket</p>
-                            <h1 style="font-size: 48px; margin: 0;"><?= htmlspecialchars($_GET['ticket']) ?></h1>
-                            <p style="margin: 15px 0 0 0; font-size: 12px;"><?= date('Y-m-d H:i:s') ?></p>
-                        </div>
-                        <button onclick="window.print()" style="padding: 8px 16px; background: #000; color: #fff; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">🖨️ Print Ticket</button>
-                    <?php endif; ?>
-                </div>
-            <?php elseif ($_GET['status'] === 'error_no_counter'): ?>
-                <p style="color: #721c24; background: #f8d7da; padding: 10px; border: 1px solid #f5c6cb; margin-bottom: 15px; border-radius: 4px;">
-                    <strong>Error:</strong> Cannot issue a ticket for a service that currently has no active counter assigned.
-                </p>
-            <?php endif; ?>
+        <?php if (isset($_GET['status']) && $_GET['status'] === 'issued'): ?>
+            <div class="success-message">
+                Ticket successfully issued!
+            </div>
         <?php endif; ?>
-        
-        <div style="display: flex; gap: 20px;">
-            <!-- Left: Ticket Issuance Form -->
-            <div style="flex: 1;">
-                <h3>Issue New Ticket</h3>
-                <form method="POST" action="/information_staff/dashboard">
-                    <input type="hidden" name="action" value="issue_ticket">
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label>Citizen Name (Optional):</label><br>
-                        <input type="text" name="name" placeholder="Leave blank for walk-in">
-                    </div>
 
-                    <div style="margin-bottom: 15px;">
-                        <label>Citizen Category:</label><br>
-                        <select name="citizen_category" required>
-                            <option value="Regular">Regular</option>
-                            <option value="Senior Citizen">Senior Citizen</option>
-                            <option value="PWD">PWD</option>
-                            <option value="Pregnant">Pregnant</option>
-                        </select>
+        <div class="row g-4">
+            <!-- Left: Ticket Issuance Form -->
+            <div class="col-lg-4 col-md-12">
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        🎫 Issue New Ticket
                     </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label>Requested Service:</label><br>
-                        <select name="service_id" required>
-                            <option value="">-- Select Service --</option>
-                            <?php foreach ($activeServices as $srv): ?>
-                                <option value="<?= $srv['id'] ?>" <?= $srv['active_counters_count'] == 0 ? 'disabled' : '' ?>>
-                                    <?= htmlspecialchars($srv['name']) ?> <?= $srv['active_counters_count'] == 0 ? '(No Active Counter)' : '' ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="card-body-custom">
+                        <form method="POST" action="/">
+                            <input type="hidden" name="action" value="issue_ticket">
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">Citizen Name <span class="text-muted" style="font-weight:400;">(Optional)</span></label>
+                                <input type="text" name="name" class="form-control-custom" placeholder="Leave blank for walk-in" style="font-size:14px;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label-custom">Citizen Category</label>
+                                <select name="citizen_category" required class="form-control-custom" style="appearance: auto;">
+                                    <option value="Regular">Regular</option>
+                                    <option value="Senior Citizen">Senior Citizen</option>
+                                    <option value="PWD">PWD</option>
+                                    <option value="Pregnant">Pregnant</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-custom">Requested Service</label>
+                                <select name="service_id" required class="form-control-custom" style="appearance: auto;">
+                                    <option value="">-- Select Service --</option>
+                                    <?php foreach ($activeServices as $srv): ?>
+                                        <option value="<?= $srv['id'] ?>"><?= htmlspecialchars($srv['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn-issue-ticket">
+                                🔖 Issue Ticket
+                            </button>
+                        </form>
                     </div>
-                    
-                    <button type="submit">
-                        Issue Ticket
-                    </button>
-                </form>
+                </div>
             </div>
-            
+
             <!-- Right: Queue Monitoring -->
-            <div style="flex: 2;">
-                <h3>Global Queue Monitoring</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ticket Number</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                            <th>Counter</th>
-                        </tr>
-                    </thead>
-                    <tbody id="global-queue-body">
-                        <?php if (!empty($recentTickets)): ?>
-                            <?php foreach ($recentTickets as $ticket): ?>
-                                <tr>
-                                    <td><strong><?= htmlspecialchars($ticket['ticket_number']) ?></strong></td>
-                                    <td><?= htmlspecialchars($ticket['service_name']) ?></td>
-                                    <td><?= ucfirst(htmlspecialchars($ticket['status'])) ?></td>
-                                    <td><?= $ticket['counter_name'] ? htmlspecialchars($ticket['counter_name']) : '-' ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="4">No active queue.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+            <div class="col-lg-8 col-md-12">
+                <div class="info-card">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <span>📊 Global Queue Monitoring</span>
+                        <span class="badge bg-primary rounded-pill px-3 py-2" style="font-size:12px;">
+                            <?= count($recentTickets) ?> tickets
+                        </span>
+                    </div>
+                    <div class="card-body-custom">
+                        <div style="overflow-x: auto;">
+                            <table class="queue-table" style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #e9ecef;">
+                                        <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Ticket No.</th>
+                                        <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Service</th>
+                                        <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($recentTickets)): ?>
+                                        <?php foreach ($recentTickets as $ticket): ?>
+                                            <?php
+                                            $statusClass = '';
+                                            $statusLabel = ucfirst(htmlspecialchars($ticket['status']));
+                                            if ($ticket['status'] === 'waiting') {
+                                                $statusClass = 'waiting';
+                                            } elseif ($ticket['status'] === 'called') {
+                                                $statusClass = 'called';
+                                            } elseif ($ticket['status'] === 'serving') {
+                                                $statusClass = 'serving';
+                                            } elseif ($ticket['status'] === 'done') {
+                                                $statusClass = 'done';
+                                            } else {
+                                                $statusClass = 'issued';
+                                            }
+                                            ?>
+                                            <tr>
+                                                <td style="padding:12px 16px; vertical-align:middle;">
+                                                    <span class="ticket-number"><?= htmlspecialchars($ticket['ticket_number']) ?></span>
+                                                </td>
+                                                <td style="padding:12px 16px; vertical-align:middle; color:#495057;">
+                                                    <?= htmlspecialchars($ticket['service_name']) ?>
+                                                </td>
+                                                <td style="padding:12px 16px; vertical-align:middle;">
+                                                    <span class="ticket-status-badge <?= $statusClass ?>">
+                                                        <?= $statusLabel ?>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="3">
+                                                <div class="queue-empty">
+                                                    <div style="font-size:32px; margin-bottom:8px;">📭</div>
+                                                    No active queue
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    <?php endif; ?>
 </div>
 
 <!-- ==========================================
