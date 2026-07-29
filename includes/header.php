@@ -31,6 +31,14 @@
         td { height: 48px; padding: 12px 16px; font-size: 14px; font-weight: 400; vertical-align: middle; border-bottom: 1px solid #eee; }
         table tr:last-child td { border-bottom: none; }
         
+        /* Card Layouts */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
+        .data-card { border: 1px solid #ccc; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; background-color: #fff; }
+        .data-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .data-card-body { flex-grow: 1; margin-bottom: 15px; }
+        .data-card-footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; align-items: center; }
+        .empty-state { padding: 40px; text-align: center; border: 1px dashed #ccc; border-radius: 8px; margin-top: 15px; color: #666; }
+        
         /* Buttons */
         .btn { height: 36px; padding: 0 16px; font-size: 14px; cursor: pointer; background-color: #333; color: #fff; border: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
         

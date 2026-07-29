@@ -155,83 +155,75 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
     </div>
 
         <div class="mb-4">
-            <table id="countersTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Services</th>
-                        <th>Staff</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    $totalCounters = count($counters);
-                    $activeCounters = 0;
-                    $inactiveCounters = 0;
-                    
-                    if ($totalCounters > 0): 
-                        foreach ($counters as $index => $c): 
-                            if ($c['is_active']) $activeCounters++;
-                            else $inactiveCounters++;
-                            
-                            $assigned = $counterServices[$c['id']] ?? [];
-                            $assignedNames = [];
-                            foreach ($assigned as $srv_id) {
-                                foreach($allActiveServices as $srv) { 
-                                    if($srv['id'] == $srv_id) { 
-                                        $assignedNames[] = $srv['name']; 
-                                        break; 
-                                    } 
-                                }
+            <?php 
+            $totalCounters = count($counters);
+            $activeCounters = 0;
+            $inactiveCounters = 0;
+            ?>
+            <div class="card-grid" id="countersTable">
+                <?php if ($totalCounters > 0): ?>
+                    <?php foreach ($counters as $index => $c): 
+                        if ($c['is_active']) $activeCounters++;
+                        else $inactiveCounters++;
+                        
+                        $assigned = $counterServices[$c['id']] ?? [];
+                        $assignedNames = [];
+                        foreach ($assigned as $srv_id) {
+                            foreach($allActiveServices as $srv) { 
+                                if($srv['id'] == $srv_id) { 
+                                    $assignedNames[] = $srv['name']; 
+                                    break; 
+                                } 
                             }
-                            $assignedStr = empty($assignedNames) ? '—' : implode(', ', $assignedNames);
-                            $typeClass = $c['is_active'] ? ($c['counter_type'] === 'Priority' ? 'text-danger' : ($c['counter_type'] === 'Dedicated' ? 'text-success' : 'text-primary')) : 'text-muted';
+                        }
+                        $assignedStr = empty($assignedNames) ? '—' : implode(', ', $assignedNames);
+                        $typeClass = $c['is_active'] ? ($c['counter_type'] === 'Priority' ? 'text-danger' : ($c['counter_type'] === 'Dedicated' ? 'text-success' : 'text-primary')) : 'text-muted';
                     ?>
-                        <tr class="counter-row" data-status="<?php echo $c['is_active'] ? 'active' : 'inactive'; ?>" data-type="<?php echo $c['counter_type']; ?>" data-name="<?php echo htmlspecialchars($c['name']); ?>">
-                            <td><?php echo $c['id']; ?></td>
-                            <td><strong><?php echo htmlspecialchars($c['name']); ?></strong></td>
-                            <td>
-                                <span class="fw-bold <?php echo $typeClass; ?>">
-                                    <?php echo $c['is_active'] ? $c['counter_type'] : 'Inactive'; ?>
-                                </span>
-                            </td>
-                            <td class="text-muted" style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?php echo htmlspecialchars($assignedStr); ?>">
-                                <?php echo htmlspecialchars($assignedStr); ?>
-                            </td>
-                            <td><?php echo $c['staff_name'] ? htmlspecialchars($c['staff_name']) : '—'; ?></td>
-                            <td>
-                                <?php if ($view === 'archived'): ?>
-                                    <!-- Restore Form -->
-                                    <form method="POST" action="/admin/counters?view=archived" style="display:inline;" onsubmit="return confirm('Restore this counter?');">
-                                        <input type="hidden" name="action" value="restore_counter">
-                                        <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                        <button type="submit">Restore</button>
-                                    </form>
-                                <?php else: ?>
-                                    <?php $assignedStaff = $counterModel->getCounterStaff($c['id']); ?>
-                                    <button onclick='openCounterModal(<?php echo json_encode($c); ?>, <?php echo json_encode($counterCategories[$c['id']] ?? []); ?>, <?php echo json_encode($assigned); ?>, <?php echo json_encode($assignedStaff); ?>)'>
-                                        Edit
-                                    </button>
-                                    <!-- Archive Form -->
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Archive this counter?');">
-                                        <input type="hidden" name="action" value="archive_counter">
-                                        <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                        <button type="submit">Archive</button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php 
-                        endforeach; 
-                    else: 
-                    ?>
-                        <tr><td colspan="6" class="text-center text-muted">No counters found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                    <div class="data-card counter-row" data-status="<?php echo $c['is_active'] ? 'active' : 'inactive'; ?>" data-type="<?php echo $c['counter_type']; ?>" data-name="<?php echo htmlspecialchars($c['name']); ?>">
+                        <div class="data-card-header">
+                            <strong><?php echo htmlspecialchars($c['name']); ?></strong>
+                            <span class="fw-bold <?php echo $typeClass; ?>">
+                                <?php echo $c['is_active'] ? $c['counter_type'] : 'Inactive'; ?>
+                            </span>
+                        </div>
+                        <div class="data-card-body">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px;">ID: <?php echo $c['id']; ?></div>
+                            <div style="font-size: 13px; margin-bottom: 5px;">
+                                <strong>Services:</strong> <span style="color: #555;"><?php echo htmlspecialchars($assignedStr); ?></span>
+                            </div>
+                            <div style="font-size: 13px;">
+                                <strong>Staff:</strong> <span style="color: #555;"><?php echo $c['staff_name'] ? htmlspecialchars($c['staff_name']) : '—'; ?></span>
+                            </div>
+                        </div>
+                        <div class="data-card-footer card-actions">
+                            <?php if ($view === 'archived'): ?>
+                                <!-- Restore Form -->
+                                <form method="POST" action="/admin/counters?view=archived" onsubmit="return confirm('Restore this counter?');">
+                                    <input type="hidden" name="action" value="restore_counter">
+                                    <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                    <button type="submit">Restore</button>
+                                </form>
+                            <?php else: ?>
+                                <?php $assignedStaff = $counterModel->getCounterStaff($c['id']); ?>
+                                <button onclick='openCounterModal(<?php echo json_encode($c); ?>, <?php echo json_encode($counterCategories[$c['id']] ?? []); ?>, <?php echo json_encode($assigned); ?>, <?php echo json_encode($assignedStaff); ?>)'>
+                                    Edit
+                                </button>
+                                <!-- Archive Form -->
+                                <form method="POST" onsubmit="return confirm('Archive this counter?');">
+                                    <input type="hidden" name="action" value="archive_counter">
+                                    <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                    <button type="submit">Archive</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        No counters found.
+                    </div>
+                <?php endif; ?>
+            </div>
             
             <div class="mt-3 pt-3 border-top text-muted small d-flex justify-content-between">
                 <div>

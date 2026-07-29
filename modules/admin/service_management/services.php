@@ -107,54 +107,47 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
     <input type="text" id="filterServiceInput" onkeyup="filterServices()" placeholder="Type to search..." style="padding: 5px; width: 250px;">
 </div>
 
-<!-- TABLE: LIST SERVICES -->
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (count($services) > 0): ?>
-            <?php foreach ($services as $row): ?>
-                <tr class="service-row" data-name="<?= htmlspecialchars($row['name']) ?>" data-code="<?= htmlspecialchars($row['code'] ?? '') ?>" data-status="<?= $row['is_active'] ? 'active' : 'inactive' ?>">
-                    <td><?= $row['id'] ?></td>
-                    <td><strong><?= htmlspecialchars($row['code'] ?? '') ?></strong></td>
-                    <td>
-                        <?= htmlspecialchars($row['name']) ?>
-                    </td>
-                    <td><?= $row['is_active'] ? 'Active' : 'Inactive' ?></td>
-                    <td>
-                        <?php if ($view === 'archived'): ?>
-                            <!-- Restore Form -->
-                            <form method="POST" action="/admin/services?view=archived" style="display:inline;" onsubmit="return confirm('Restore this service?');">
-                                <input type="hidden" name="action" value="restore_service">
-                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                <button type="submit">Restore</button>
-                            </form>
-                        <?php else: ?>
-                            <!-- Edit Button -->
-                            <button onclick="editService(<?= htmlspecialchars(json_encode($row['id'])) ?>, <?= htmlspecialchars(json_encode($row['name'])) ?>, <?= htmlspecialchars(json_encode($row['requirements'] ?? '')) ?>)">Edit</button>
-                            
-                            <!-- Archive Form -->
-                            <form method="POST" style="display:inline;" onsubmit="return confirm('Archive this service?');">
-                                <input type="hidden" name="action" value="archive_service">
-                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                <button type="submit">Archive</button>
-                            </form>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr><td colspan="6">No services found.</td></tr>
-        <?php endif; ?>
-    </tbody>
-</table>
+<!-- CARDS: LIST SERVICES -->
+<div class="card-grid">
+    <?php if (count($services) > 0): ?>
+        <?php foreach ($services as $row): ?>
+            <div class="data-card service-row" data-name="<?= htmlspecialchars($row['name']) ?>" data-code="<?= htmlspecialchars($row['code'] ?? '') ?>" data-status="<?= $row['is_active'] ? 'active' : 'inactive' ?>">
+                <div class="data-card-header">
+                    <strong><?= htmlspecialchars($row['code'] ?? '') ?></strong>
+                    <span><?= $row['is_active'] ? 'Active' : 'Inactive' ?></span>
+                </div>
+                <div class="data-card-body">
+                    <div style="font-size: 16px; margin-bottom: 5px;"><?= htmlspecialchars($row['name']) ?></div>
+                    <div style="font-size: 12px; color: #666;">ID: <?= $row['id'] ?></div>
+                </div>
+                <div class="data-card-footer card-actions">
+                    <?php if ($view === 'archived'): ?>
+                        <!-- Restore Form -->
+                        <form method="POST" action="/admin/services?view=archived" onsubmit="return confirm('Restore this service?');">
+                            <input type="hidden" name="action" value="restore_service">
+                            <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                            <button type="submit">Restore</button>
+                        </form>
+                    <?php else: ?>
+                        <!-- Edit Button -->
+                        <button onclick="editService(<?= htmlspecialchars(json_encode($row['id'])) ?>, <?= htmlspecialchars(json_encode($row['name'])) ?>, <?= htmlspecialchars(json_encode($row['requirements'] ?? '')) ?>)">Edit</button>
+                        
+                        <!-- Archive Form -->
+                        <form method="POST" onsubmit="return confirm('Archive this service?');">
+                            <input type="hidden" name="action" value="archive_service">
+                            <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                            <button type="submit">Archive</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="empty-state">
+            No services found.
+        </div>
+    <?php endif; ?>
+</div>
 
 </div>
 
