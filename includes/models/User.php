@@ -48,6 +48,26 @@ class User {
         return false;
     }
 
+    public function findByEmail($email) {
+        $query = "SELECT id, name, username, email, role, status FROM " . $this->table_name . " WHERE email = :email LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $email = htmlspecialchars(strip_tags($email));
+        $stmt->bindParam(":email", $email);
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $this->id = $row['id'];
+            $this->name = $row['name'];
+            $this->username = $row['username'];
+            $this->email = $row['email'];
+            $this->role = $row['role'];
+            $this->status = $row['status'];
+            return true;
+        }
+        return false;
+    }
+
     public function findById($id) {
         $query = "SELECT id, name, username, email, password, role, status, failed_attempts, locked_until, setup_token, token_expires, otp_code, otp_expires FROM " . $this->table_name . " WHERE id = :id LIMIT 0,1";
 
@@ -255,9 +275,9 @@ class User {
         return $stmt->execute();
     }
 
-    public function generateNewSetupToken() {
+    public function generateNewSetupToken($expiration_minutes = 1440) {
         $this->setup_token = bin2hex(random_bytes(32));
-        $this->token_expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+        $this->token_expires = date('Y-m-d H:i:s', strtotime("+$expiration_minutes minutes"));
         
         $query = "UPDATE " . $this->table_name . " SET setup_token = :token, token_expires = :expires WHERE id = :id";
         $stmt = $this->conn->prepare($query);

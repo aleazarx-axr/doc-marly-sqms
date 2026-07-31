@@ -13,31 +13,40 @@ $message = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    
-    if (empty($username)) {
-        $error = "Username is required.";
-    } else {
-        // Check if username is already taken by someone else
-        $checkStmt = $conn->prepare("SELECT id FROM users WHERE username = :username AND id != :id");
-        $checkStmt->execute([':username' => $username, ':id' => $userId]);
-        if ($checkStmt->rowCount() > 0) {
-            $error = "Username is already taken by another user.";
+    if (isset($_POST['request_password_reset'])) {
+        require_once __DIR__ . '/includes/models/User.php';
+        require_once __DIR__ . '/includes/Mailer.php';
+        
+        $userModel = new User($conn);
+        if ($userModel->findById($userId)) {
+            if (empty($userModel->email)) {
+                $error = "You do not have a connected email address to send the link to. Please update your profile with an email address first.";
+            } else {
+                $userModel->generateNewSetupToken(15);
+                $mailer = new Mailer();
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                $host = $_SERVER['HTTP_HOST'];
+                $resetLink = $protocol . "://" . $host . "/setup.php?token=" . $userModel->setup_token;
+                
+                $mailer->sendPasswordResetEmail($userModel->email, $userModel->name, $resetLink);
+                $message = "A password reset link has been sent to your email address.";
+            }
         } else {
-            // Update logic
-            if (!empty($password)) {
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $updateStmt = $conn->prepare("UPDATE users SET name = :name, username = :username, email = :email, password = :password WHERE id = :id");
-                $updateStmt->execute([
-                    ':name' => $name,
-                    ':username' => $username,
-                    ':email' => $email,
-                    ':password' => $hashedPassword,
-                    ':id' => $userId
-                ]);
+            $error = "Failed to initiate password reset.";
+        }
+    } else {
+        $name = trim($_POST['name'] ?? '');
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        
+        if (empty($username)) {
+            $error = "Username is required.";
+        } else {
+            // Check if username is already taken by someone else
+            $checkStmt = $conn->prepare("SELECT id FROM users WHERE username = :username AND id != :id");
+            $checkStmt->execute([':username' => $username, ':id' => $userId]);
+            if ($checkStmt->rowCount() > 0) {
+                $error = "Username is already taken by another user.";
             } else {
                 $updateStmt = $conn->prepare("UPDATE users SET name = :name, username = :username, email = :email WHERE id = :id");
                 $updateStmt->execute([
@@ -46,11 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':email' => $email,
                     ':id' => $userId
                 ]);
+                $message = "Profile updated successfully!";
+                // Update session if name or username changed
+                $_SESSION['name'] = $name;
+                $_SESSION['username'] = $username;
             }
-            $message = "Profile updated successfully!";
-            // Update session if name or username changed
-            $_SESSION['name'] = $name;
-            $_SESSION['username'] = $username;
         }
     }
 }
@@ -166,22 +175,13 @@ if ($role === 'admin') {
                             Change Password
                         </h6>
 
-                        <div class="mb-3">
-
-                            <label class="form-label fw-semibold">
-                                New Password
-                            </label>
-
-                            <input
-                                type="password"
-                                class="form-control"
-                                name="password"
-                                placeholder="Leave blank to keep your current password">
-
-                            <div class="form-text">
-                                Your password will only be changed if you enter a new one.
-                            </div>
-
+                        <div class="mb-4">
+                            <p class="text-muted small mb-3">
+                                For security purposes, password changes are handled via email verification. Click the button below to receive a password reset link at your connected email address.
+                            </p>
+                            <button type="submit" name="request_password_reset" value="1" class="btn btn-outline-primary">
+                                <i class="bi bi-envelope-check me-1"></i> Send Password Reset Link
+                            </button>
                         </div>
 
                         <div class="text-end">

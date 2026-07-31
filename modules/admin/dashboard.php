@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../includes/models/Ticket.php';
 require_once __DIR__ . '/../../includes/models/Counter.php';
+require_once __DIR__ . '/../../includes/models/Setting.php';
 
 Session::requireLogin();
 $userId = Session::get('user_id');
@@ -12,10 +13,13 @@ $db = new Database();
 $conn = $db->getConnection();
 $ticketModel = new Ticket($conn);
 $counterModel = new Counter($conn);
+$settingModel = new Setting($conn);
 
 if (!$conn) {
     die("Database connection failed. Please check your .env settings and ensure the database is running.");
 }
+
+
 
 $serviceIds = [];
 $waitingList = [];
@@ -110,6 +114,8 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
                 </div>
             </a>
         </div>
+
+
 
         <!-- Bottom Section: Queue Monitoring -->
         <div class="card card-staff">

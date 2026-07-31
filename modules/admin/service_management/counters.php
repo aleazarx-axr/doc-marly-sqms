@@ -49,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $cs = new CounterService($conn);
                     $cs->saveAssignments($c->id, $_POST['assigned_services'] ?? []);
 
-                    // Save Staff Assignments
-                    $c->saveStaffAssignments($c->id, $_POST['staff_ids'] ?? []);
+                    // Save Staff Assignments (Commented out per dynamic assignment)
+                    // $c->saveStaffAssignments($c->id, $_POST['staff_ids'] ?? []);
 
                     header("Location: /admin/counters{$redirectView}");
                     exit;
@@ -290,6 +290,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 
                         <!-- Card Body -->
                         <div class="card-body p-3 d-flex flex-column gap-3">
+                            <!-- 
                             <div>
                                 <span class="meta-label d-block mb-1">Assigned Staff</span>
                                 <div class="d-flex align-items-center text-dark small">
@@ -299,6 +300,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                                     </span>
                                 </div>
                             </div>
+                            -->
 
                             <div>
                                 <span class="meta-label d-block mb-1">Services Handled</span>
@@ -441,6 +443,8 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
 
                     <!-- Section 3: Staff & Service Mappings -->
                     <div class="row g-3">
+                        <!-- Assigned Staff commented out for dynamic assignment -->
+                        <!--
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Assigned Staff</label>
                             <div class="border rounded p-2 bg-white" style="max-height: 160px; overflow-y: auto;">
@@ -454,6 +458,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                                 <?php endforeach; ?>
                             </div>
                         </div>
+                        -->
 
                         <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Assigned Services</label>

@@ -15,12 +15,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $userModel->id = $user_id;
         
         if ($userModel->archive()) {
-            header("Location: /admin/users?status=archived");
+            header("Location: /admin/user_management?status=archived");
             exit();
         }
     }
 }
 
-header("Location: /admin/users?status=error");
+header("Location: /admin/user_management?status=error");
 exit();
 ?>

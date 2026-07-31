@@ -34,8 +34,15 @@ $stmt = $conn->query("
 ");
 $activeServices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch recent tickets for Queue Monitoring
-$stmt = $conn->query("SELECT t.ticket_number, s.name as service_name, t.status, c.name as counter_name FROM tickets t LEFT JOIN services s ON t.service_id = s.id LEFT JOIN counters c ON t.counter_id = c.id ORDER BY t.issued_at DESC LIMIT 10");
+// Fetch recent tickets for Queue Monitoring (only for the current session)
+$session_start = getQueueSessionStart($conn);
+$stmt = $conn->prepare("SELECT t.ticket_number, s.name as service_name, t.status, c.name as counter_name 
+                        FROM tickets t 
+                        LEFT JOIN services s ON t.service_id = s.id 
+                        LEFT JOIN counters c ON t.counter_id = c.id 
+                        WHERE t.created_at >= ?
+                        ORDER BY t.issued_at DESC LIMIT 10");
+$stmt->execute([$session_start]);
 $recentTickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -147,8 +154,12 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
     <?php if ($role === 'information_staff'): ?>
         <!-- Information Staff Dashboard (Kiosk & Monitoring) -->
         <?php if (isset($_GET['status']) && $_GET['status'] === 'issued'): ?>
-            <div class="success-message">
-                Ticket successfully issued!
+            <div class="success-message" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+                Ticket successfully issued! Ticket Number: <strong><?= htmlspecialchars($_GET['ticket'] ?? '') ?></strong>
+            </div>
+        <?php elseif (isset($_GET['status']) && $_GET['status'] === 'error_no_counter'): ?>
+            <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                Cannot issue ticket: There are no active counters currently assigned to this service. Please ensure a counter is active and assigned first.
             </div>
         <?php endif; ?>
 
@@ -157,10 +168,10 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
             <div class="col-lg-4 col-md-12">
                 <div class="info-card">
                     <div class="card-header-custom">
-                        🎫 Issue New Ticket
+                        <i class="bi bi-ticket-perforated me-2"></i> Issue New Ticket
                     </div>
                     <div class="card-body-custom">
-                        <form method="POST" action="/">
+                        <form method="POST" action="/information_staff/dashboard">
                             <input type="hidden" name="action" value="issue_ticket">
 
                             <div class="mb-3">
@@ -189,7 +200,7 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
                             </div>
 
                             <button type="submit" class="btn-issue-ticket">
-                                🔖 Issue Ticket
+                                <i class="bi bi-bookmark-plus me-2"></i> Issue Ticket
                             </button>
                         </form>
                     </div>
@@ -200,7 +211,7 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
             <div class="col-lg-8 col-md-12">
                 <div class="info-card">
                     <div class="card-header-custom d-flex justify-content-between align-items-center">
-                        <span>📊 Global Queue Monitoring</span>
+                        <span><i class="bi bi-bar-chart-line me-2"></i> Global Queue Monitoring</span>
                         <span class="badge bg-primary rounded-pill px-3 py-2" style="font-size:12px;">
                             <?= count($recentTickets) ?> tickets
                         </span>
@@ -215,7 +226,7 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
                                         <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="global-queue-body">
                                     <?php if (!empty($recentTickets)): ?>
                                         <?php foreach ($recentTickets as $ticket): ?>
                                             <?php
@@ -251,7 +262,7 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
                                         <tr>
                                             <td colspan="3">
                                                 <div class="queue-empty">
-                                                    <div style="font-size:32px; margin-bottom:8px;">📭</div>
+                                                    <i class="bi bi-mailbox" style="font-size:32px; display:block; margin-bottom:8px; color: #adb5bd;"></i>
                                                     No active queue
                                                 </div>
                                             </td>

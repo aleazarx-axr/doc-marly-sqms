@@ -15,12 +15,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $userModel->id = $user_id;
         
         if ($userModel->restore()) {
-            header("Location: /admin/users?status=restored");
+            header("Location: /admin/user_management?status=restored");
             exit();
         }
     }
 }
 
-header("Location: /admin/users?status=error");
+header("Location: /admin/user_management?status=error");
 exit();
 ?>

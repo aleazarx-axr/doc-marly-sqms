@@ -1,8 +1,8 @@
 <?php
-require_once __DIR__ . '/../../../includes/functions.php';
-require_once __DIR__ . '/../../../config/database.php';
-require_once __DIR__ . '/../../../includes/models/Ticket.php';
-require_once __DIR__ . '/../../../includes/models/Counter.php';
+require_once __DIR__ . '/../../includes/functions.php';
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/models/Ticket.php';
+require_once __DIR__ . '/../../includes/models/Counter.php';
 
 Session::requireLogin();
 $role = Session::get('role');
@@ -14,27 +14,21 @@ $ticketModel = new Ticket($conn);
 $counterModel = new Counter($conn);
 
 $records = [];
-if ($role === 'admin' || $role === 'information_staff') {
+if ($role !== 'information_staff') {
     header("Location: /");
     exit();
 }
 
-$staffCounters = $counterModel->getCountersByStaff($userId);
-$counterIds = array_column($staffCounters, 'id');
-if (!empty($counterIds)) {
-    $stmtRecords = $ticketModel->readRecordsByCounters($counterIds);
-    if ($stmtRecords) {
-        $records = $stmtRecords->fetchAll(PDO::FETCH_ASSOC);
-    }
-}
+$stmtRecords = $ticketModel->readAllRecords();
+$records = $stmtRecords->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = 'Manage Records - Staff Portal';
 $activeMenu = 'records';
 
-require_once __DIR__ . '/../../../includes/header.php';
-require_once __DIR__ . '/../../../includes/sidebar_user.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/sidebar_user.php';
 ?>
-
+<link rel="stylesheet" href="/assets/css/information_staff.css">
 <style>
 /* Enhance the simple-datatables look to match service staff table */
 .dataTable-wrapper { font-family: sans-serif; }
@@ -62,8 +56,48 @@ require_once __DIR__ . '/../../../includes/sidebar_user.php';
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #333;"><i class="bi bi-journal-text me-2"></i> Manage Records</h2>
     </div>
+    <?php
+        $totalWaitTime = 0;
+        $waitCount = 0;
+        foreach ($records as $row) {
+            if (!empty($row['called_at']) && !empty($row['issued_at'])) {
+                $issued = strtotime($row['issued_at']);
+                $called = strtotime($row['called_at']);
+                if ($called >= $issued) {
+                    $totalWaitTime += ($called - $issued);
+                    $waitCount++;
+                }
+            }
+        }
+        $avgWaitSec = $waitCount > 0 ? floor($totalWaitTime / $waitCount) : 0;
+        $avgWaitMins = floor($avgWaitSec / 60);
+        $avgWaitRem = $avgWaitSec % 60;
+        $avgWaitStr = sprintf("%02d:%02d", $avgWaitMins, $avgWaitRem);
+    ?>
 
+    <!-- Service Staff Card Style for Stats -->
+    <div style="display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 30px;">
+        <div style="flex: 1; min-width: 250px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+            <h3 style="margin-top: 0; color: #242364; font-size: 16px;">Avg Waiting Time</h3>
+            <div style="font-size: 32px; font-weight: bold; color: #333; margin-top: 10px;">
+                <?= $avgWaitStr ?> <span style="font-size: 16px; font-weight: normal; color: #666;">(min:sec)</span>
+            </div>
+        </div>
+        
+        <div style="flex: 1; min-width: 250px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+            <h3 style="margin-top: 0; color: #242364; font-size: 16px;">Total Tickets Issued</h3>
+            <div style="font-size: 32px; font-weight: bold; color: #333; margin-top: 10px;">
+                <?= count($records) ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Staff Card Style for Table -->
     <div style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+        <h3 style="margin-top: 0; margin-bottom: 20px; color: #242364;">
+            <i class="bi bi-table me-2"></i> Ticket History
+        </h3>
+        
         <table id="recordsTable" style="width:100%;">
             <thead>
                 <tr>
@@ -150,4 +184,4 @@ function viewRecord(record) {
 }
 </script>
 
-<?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

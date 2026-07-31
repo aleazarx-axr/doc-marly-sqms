@@ -97,5 +97,35 @@ class Mailer {
             return false;
         }
     }
+
+    public function sendPasswordResetEmail($toEmail, $name, $resetLink) {
+        if (empty($toEmail) || empty($this->mail->Username)) {
+            return false;
+        }
+
+        try {
+            $this->mail->clearAddresses();
+            $this->mail->addAddress($toEmail);
+            $this->mail->Subject = 'Reset Your Password - Doc Marly SQMS';
+            
+            $this->mail->Body = "
+                <h3>Hello " . htmlspecialchars($name ?? '') . ",</h3>
+                <p>We received a request to reset your password for the Doc Marly SQMS.</p>
+                <p>Click the link below to securely set a new password:</p>
+                <p><a href=\"" . htmlspecialchars($resetLink ?? '') . "\" style=\"padding: 10px 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px; display: inline-block; margin: 10px 0;\">Reset Password</a></p>
+                <p>If you didn't request a password reset, you can safely ignore this email.</p>
+                <p>This link will expire in 15 minutes.</p>
+                <p>Best Regards,<br>The Doc Marly Team</p>
+            ";
+            
+            $this->mail->AltBody = "Hello $name,\n\nWe received a request to reset your password for the Doc Marly SQMS.\n\nClick the link below to securely set a new password:\n\n$resetLink\n\nIf you didn't request this, you can safely ignore this email.\n\nThis link will expire in 15 minutes.\n\nBest Regards,\nThe Doc Marly Team";
+
+            $this->mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Reset email could not be sent. Mailer Error: {$this->mail->ErrorInfo}");
+            return false;
+        }
+    }
 }
 ?>

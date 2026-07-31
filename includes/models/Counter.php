@@ -127,13 +127,13 @@ class Counter {
         return $stmt->rowCount() > 0;
     }
     public function getCountersByStaff($staffId) {
+        // Return all active, non-archived counters for dynamic assignment based on login order
         $query = "SELECT c.*, u.username as current_staff_username 
                   FROM " . $this->table_name . " c 
-                  JOIN counter_staff cs ON c.id = cs.counter_id
                   LEFT JOIN users u ON c.current_staff_id = u.id
-                  WHERE cs.staff_id = :staff_id AND c.is_archived = 0 AND c.is_active = 1";
+                  WHERE c.is_archived = 0 AND c.is_active = 1
+                  ORDER BY c.name ASC";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':staff_id', $staffId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

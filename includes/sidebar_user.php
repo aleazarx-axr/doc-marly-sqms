@@ -238,10 +238,10 @@
                     </a>
                 </li>
 
-                <?php if ($role === 'service_staff'): ?>
+                <?php if ($role === 'service_staff' || $role === 'information_staff'): ?>
                 <!-- Records -->
                 <li class="nav-item mb-1">
-                    <a href="/service_staff/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
+                    <a href="/<?php echo $role; ?>/records" class="nav-link-custom <?php echo (isset($activeMenu) && $activeMenu == 'records') ? 'active' : ''; ?>">
                         <i class="bi bi-archive-fill"></i> Records
                     </a>
                 </li>

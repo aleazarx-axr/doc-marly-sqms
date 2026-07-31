@@ -22,6 +22,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         if (empty($user_id)) {
             // Add Mode
             if (!empty($name) && !empty($email)) {
+                if (!preg_match('/@gmail\.com$/i', $email)) {
+                    header('Location: /admin/user_management?status=invalid_email');
+                    exit();
+                }
                 if (empty($username)) {
                     $username = $userModel->generateUsername($name);
                 }
@@ -52,6 +56,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         } else {
             // Edit Mode
             if (!empty($user_id) && !empty($username)) {
+                if (!empty($email) && !preg_match('/@gmail\.com$/i', $email)) {
+                    header('Location: /admin/user_management?status=invalid_email');
+                    exit();
+                }
+                
                 $userModel->id = $user_id;
                 $userModel->name = $name;
                 $userModel->username = $username;
@@ -113,6 +122,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
             $msg = "Action completed successfully.";
             $color = "green";
             if ($status == 'error') { $msg = "An error occurred."; $color = "red"; }
+            if ($status == 'invalid_email') { $msg = "Only @gmail.com email addresses are allowed."; $color = "red"; }
             if ($status == 'deleted') { $msg = "User deleted successfully."; $color = "orange"; }
             if ($status == 'edited') { $msg = "User updated successfully."; $color = "blue"; }
             if ($status == 'added') { $msg = "User added successfully."; $color = "green"; }
@@ -203,7 +213,7 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px;">Email:</label>
-                <input type="email" name="email" id="modal_email" required style="width: 100%; padding: 8px;">
+                <input type="email" name="email" id="modal_email" required style="width: 100%; padding: 8px;" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" title="Please enter a valid @gmail.com address" placeholder="e.g. user@gmail.com">
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px;">Password <span id="password_hint" style="font-size: 12px; color: #666;">(leave blank to keep current)</span>:</label>

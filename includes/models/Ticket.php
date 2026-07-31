@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../functions.php';
+
 class Ticket {
     private $conn;
     private $table_name = "tickets";
@@ -149,17 +151,25 @@ class Ticket {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function expireOldTickets($session_start) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET status = 'expired' 
+                  WHERE status IN ('waiting', 'called') AND created_at < ?";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([$session_start]);
+    }
+
     public function createTicket($name, $service_id, $citizen_category) {
-        $today = date('Y-m-d');
+        $session_start = getQueueSessionStart($this->conn);
         
-        $todayStart = $today . ' 00:00:00';
-        $todayEnd = $today . ' 23:59:59';
+        // Auto-expire old tickets on new ticket creation (Lazy Reset)
+        $this->expireOldTickets($session_start);
         
         $queryNum = "SELECT ticket_number FROM " . $this->table_name . " 
-                     WHERE service_id = ? AND created_at >= ? AND created_at <= ?
+                     WHERE service_id = ? AND created_at >= ?
                      ORDER BY id DESC LIMIT 1";
         $stmtNum = $this->conn->prepare($queryNum);
-        $stmtNum->execute([$service_id, $todayStart, $todayEnd]);
+        $stmtNum->execute([$service_id, $session_start]);
         $lastTicket = $stmtNum->fetch(PDO::FETCH_ASSOC);
         
         $nextNum = 1;

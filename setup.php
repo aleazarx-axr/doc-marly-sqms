@@ -34,6 +34,10 @@ if (!$is_invalid && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         if ($user->updatePasswordAndClearToken($password)) {
             $user->logAuthEvent('password_setup');
+            
+            // Destroy any existing session to prevent auto-login
+            Session::destroy();
+            
             header("Location: login.php?status=setup_complete");
             exit();
         } else {
@@ -71,7 +75,7 @@ if (!$is_invalid && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <a href="login.php" class="btn-login" style="text-align: center; text-decoration: none; display: block;">Go to Login</a>
             <?php else: ?>
-                <p style="text-align: center; margin-bottom: 20px;">Welcome, <strong><?php echo htmlspecialchars($user->name); ?></strong>!<br>Please set your password below.</p>
+                <p style="text-align: center; margin-bottom: 20px;">Welcome, <strong><?php echo htmlspecialchars($user->name ?? ''); ?></strong>!<br>Please set your password below.</p>
                 
                 <?php if (!empty($error)): ?>
                     <div class="error-msg">

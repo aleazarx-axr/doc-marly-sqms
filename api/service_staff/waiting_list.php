@@ -50,12 +50,21 @@ $waitingList = $ticketModel->getWaitingList(null);
 if (!empty($waitingList)) {
     foreach ($waitingList as $ticket) {
         $canCall = in_array($ticket['service_id'], $serviceIds);
-        echo '<tr style="' . (!$canCall ? 'opacity: 0.5; background-color: #f8f9fa;' : '') . '">';
-        echo '<td><strong>' . htmlspecialchars($ticket['ticket_number']) . '</strong></td>';
-        echo '<td>' . htmlspecialchars($ticket['name'] ?? $ticket['citizen_category']) . '</td>';
-        echo '<td>' . htmlspecialchars($ticket['service_name']) . '</td>';
+        $opacity = !$canCall ? 'opacity: 0.5;' : '';
+        $bg = $canCall ? '#242364' : '#94a3b8';
+        
+        echo '<tr style="' . $opacity . '">';
+        echo '<td><span style="background: ' . $bg . '; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: monospace; font-size: 0.9rem;">' . htmlspecialchars($ticket['ticket_number']) . '</span></td>';
+        echo '<td style="font-weight: 700; color: #1e293b;">' . htmlspecialchars($ticket['name'] ?? $ticket['citizen_category']) . '</td>';
+        echo '<td style="color: #64748b;"><i class="bi bi-tag me-1"></i> ' . htmlspecialchars($ticket['service_name']) . '</td>';
+        
+        if ($canCall) {
+            echo '<td><span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Matching</span></td>';
+        } else {
+            echo '<td><span style="background: rgba(100, 116, 139, 0.1); color: #64748b; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Other Counter</span></td>';
+        }
         echo '</tr>';
     }
 } else {
-    echo '<tr><td colspan="3">No tickets in queue</td></tr>';
+    echo '<tr><td colspan="4"><div style="text-align: center; padding: 60px 0;"><i class="bi bi-clipboard2-check text-muted" style="font-size: 3rem; opacity: 0.3;"></i><p style="color: #64748b; margin-top: 16px; font-weight: 700;">No tickets in queue</p></div></td></tr>';
 }

@@ -61,10 +61,6 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
             <div style="font-size: 28px; font-weight: bold; color: #0f172a;"><?= count($records) ?></div>
         </div>
     </div>
-    <div style="margin-bottom: 15px;">
-        <label>Search by Name or Ticket No:</label>
-        <input type="text" id="filterRecordInput" onkeyup="filterRecords()" placeholder="Type to search..." style="padding: 5px; width: 250px;">
-    </div>
 
     <div class="mb-4">
         <table id="recordsTable">
@@ -79,22 +75,18 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
                 </tr>
             </thead>
             <tbody>
-                <?php if (count($records) > 0): ?>
-                    <?php foreach ($records as $row): ?>
-                        <tr class="record-row" data-name="<?= htmlspecialchars($row['name'] ?? '') ?>" data-ticket="<?= htmlspecialchars($row['ticket_number'] ?? '') ?>">
-                            <td><?= $row['id'] ?></td>
-                            <td><?= htmlspecialchars($row['name'] ?? $row['citizen_category'] ?? 'N/A') ?></td>
-                            <td><strong><?= htmlspecialchars($row['ticket_number'] ?? '') ?></strong></td>
-                            <td><?= htmlspecialchars($row['service_name'] ?? 'N/A') ?></td>
-                            <td><?= htmlspecialchars(date('M d, Y h:i A', strtotime($row['issued_at']))) ?></td>
-                            <td>
-                                <button onclick="viewRecord(<?= htmlspecialchars(json_encode($row)) ?>)">View</button>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr><td colspan="6">No records found.</td></tr>
-                <?php endif; ?>
+                <?php foreach ($records as $row): ?>
+                    <tr class="record-row" data-name="<?= htmlspecialchars($row['name'] ?? '') ?>" data-ticket="<?= htmlspecialchars($row['ticket_number'] ?? '') ?>">
+                        <td><?= $row['id'] ?></td>
+                        <td><?= htmlspecialchars($row['name'] ?? $row['citizen_category'] ?? 'N/A') ?></td>
+                        <td><strong><?= htmlspecialchars($row['ticket_number'] ?? '') ?></strong></td>
+                        <td><?= htmlspecialchars($row['service_name'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars(date('M d, Y h:i A', strtotime($row['issued_at']))) ?></td>
+                        <td>
+                            <button onclick="viewRecord(<?= htmlspecialchars(json_encode($row)) ?>)">View</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>
@@ -121,22 +113,23 @@ require_once __DIR__ . '/../../includes/sidebar_admin.php';
     </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
 <script>
-function filterRecords() {
-    const input = document.getElementById('filterRecordInput').value.toLowerCase();
-    const rows = document.querySelectorAll('.record-row');
-    
-    rows.forEach(row => {
-        const name = row.getAttribute('data-name').toLowerCase();
-        const ticket = row.getAttribute('data-ticket').toLowerCase();
-        
-        if (name.includes(input) || ticket.includes(input)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById("recordsTable")) {
+        new simpleDatatables.DataTable("#recordsTable", {
+            searchable: true,
+            perPage: 10,
+            labels: {
+                placeholder: "Search records...",
+                perPage: "records per page",
+                noRows: "No records found",
+                info: "Showing {start} to {end} of {rows} records",
+            }
+        });
+    }
+});
 
 function viewRecord(record) {
     document.getElementById('v_id').innerText = record.id;

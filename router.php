@@ -32,6 +32,7 @@ $routes = [
     '/information_staff/profile' => 'modules/information_staff/profile.php',
     '/information_staff/live_display' => 'modules/information_staff/live_display.php',
     '/information_staff/logout' => 'modules/information_staff/logout.php',
+    '/information_staff/records' => 'modules/information_staff/records.php',
     
     // Service Staff (was staff/queue)
     '/service_staff/dashboard' => 'modules/service_staff/dashboard.php',

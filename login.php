@@ -97,7 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- FORM CONTENT -->
         <div class="login-form-content">
-            <!-- ERROR MESSAGE -->
+            <!-- NOTIFICATIONS -->
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'setup_complete'): ?>
+                <div class="success-msg" style="background: #e8f5e9; color: #2e7d32; padding: 10px 15px; border-radius: 6px; font-size: 14px; margin-bottom: 20px; border: 1px solid #c8e6c9; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle"></i>
+                    Account set up successfully. Please log in to continue.
+                </div>
+            <?php endif; ?>
+            
             <?php if (isset($error) && !empty($error)): ?>
                 <div class="error-msg">
                     <i class="fas fa-exclamation-circle"></i>
@@ -126,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <i class="fas fa-eye-slash" id="pwdIcon"></i>
                         </button>
                     </div>
+
                 </div>
 
                 <button type="submit" class="btn-login">

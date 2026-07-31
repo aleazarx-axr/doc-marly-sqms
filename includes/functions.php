@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Manila');
 
 function maskEmail($email) {
     if (empty($email)) return '';
@@ -122,5 +123,21 @@ class Session {
             exit();
         }
     }
+}
+
+function getQueueSessionStart($db_conn) {
+    require_once __DIR__ . '/models/Setting.php';
+    $settingModel = new Setting($db_conn);
+    $last_reset_time = $settingModel->get('last_reset_time') ?: '2000-01-01 00:00:00';
+    $daily_reset_time = $settingModel->get('daily_reset_time') ?: '00:00:00';
+
+    $today = date('Y-m-d');
+    $today_reset = $today . ' ' . $daily_reset_time;
+    
+    if (date('Y-m-d H:i:s') < $today_reset) {
+        $today_reset = date('Y-m-d', strtotime('-1 day')) . ' ' . $daily_reset_time;
+    }
+
+    return ($last_reset_time > $today_reset) ? $last_reset_time : $today_reset;
 }
 ?>
