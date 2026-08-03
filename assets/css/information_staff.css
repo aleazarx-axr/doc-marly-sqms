@@ -40,17 +40,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 16px;
     margin-bottom: 30px;
-    background: var(--nexus-card-bg);
-    padding: 24px 30px;
-    border-radius: var(--nexus-radius);
-    box-shadow: var(--nexus-shadow);
-    border: 1px solid var(--nexus-border);
-    transition: var(--nexus-transition);
-}
-
-.header-section:hover {
-    box-shadow: var(--nexus-shadow-hover);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-section h1 {
@@ -99,29 +95,19 @@ body {
     50% { opacity: 0.5; transform: scale(0.8); }
 }
 
-.info-staff-badge:hover {
-    background: var(--nexus-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(36, 35, 100, 0.25);
-}
-
 /* ============================================
    NEXUS CARDS
    ============================================ */
 .info-card {
-    background: var(--nexus-card-bg);
-    border-radius: var(--nexus-radius);
-    border: 1px solid var(--nexus-border);
+    background: #fff;
+    border-radius: 16px;
     box-shadow: var(--nexus-shadow);
-    transition: var(--nexus-transition);
-    overflow: hidden;
+    border: 1px solid var(--nexus-border);
     height: 100%;
-}
-
-.info-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--nexus-shadow-hover);
-    border-color: #d0d8e8;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: var(--nexus-transition);
 }
 
 /* Card Header - Nexus Style */
@@ -174,11 +160,6 @@ body {
     border-color: var(--nexus-primary);
     box-shadow: var(--nexus-shadow-focus);
     outline: none;
-    background: #ffffff;
-}
-
-.form-control-custom:hover {
-    border-color: #c8d0dc;
     background: #ffffff;
 }
 
@@ -253,16 +234,6 @@ select.form-control-custom option {
     background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
     opacity: 0;
     transition: var(--nexus-transition);
-}
-
-.btn-issue-ticket:hover {
-    background: var(--nexus-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(36, 35, 100, 0.25);
-}
-
-.btn-issue-ticket:hover::after {
-    opacity: 1;
 }
 
 .btn-issue-ticket:active {
@@ -391,11 +362,7 @@ select.form-control-custom option {
 }
 
 .queue-table tbody tr {
-    transition: var(--nexus-transition);
-}
-
-.queue-table tbody tr:hover {
-    background: #f8fafc;
+    transition: all 0.2s ease;
 }
 
 .queue-table tbody tr:last-child td {
@@ -591,8 +558,8 @@ select.form-control-custom option {
     box-shadow: var(--nexus-shadow);
 }
 
-.nexus-shadow-hover:hover {
-    box-shadow: var(--nexus-shadow-hover);
+.nexus-shadow-hover {
+    transition: var(--nexus-transition);
 }
 
 /* ============================================

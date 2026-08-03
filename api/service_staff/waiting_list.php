@@ -53,15 +53,15 @@ if (!empty($waitingList)) {
         $opacity = !$canCall ? 'opacity: 0.5;' : '';
         $bg = $canCall ? '#242364' : '#94a3b8';
         
-        echo '<tr style="' . $opacity . '">';
-        echo '<td><span style="background: ' . $bg . '; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: monospace; font-size: 0.9rem;">' . htmlspecialchars($ticket['ticket_number']) . '</span></td>';
-        echo '<td style="font-weight: 700; color: #1e293b;">' . htmlspecialchars($ticket['name'] ?? $ticket['citizen_category']) . '</td>';
-        echo '<td style="color: #64748b;"><i class="bi bi-tag me-1"></i> ' . htmlspecialchars($ticket['service_name']) . '</td>';
+        echo '<tr>';
+        echo '<td style="width: 20%; min-width: 120px; white-space: nowrap; padding:12px 16px; vertical-align:middle; ' . $opacity . '"><span style="display: inline-block; min-width: 80px; text-align: center; white-space: nowrap; word-break: keep-all; background: ' . $bg . '; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: monospace; font-size: 0.9rem;">' . htmlspecialchars($ticket['ticket_number']) . '</span></td>';
+        echo '<td style="width: 35%; padding:12px 16px; vertical-align:middle; font-weight: 700; color: #1e293b; ' . $opacity . '">' . htmlspecialchars(!empty($ticket['name']) ? $ticket['name'] : $ticket['citizen_category']) . '</td>';
+        echo '<td style="width: 25%; padding:12px 16px; vertical-align:middle; color: #64748b; ' . $opacity . '"><i class="bi bi-tag me-1"></i> ' . htmlspecialchars($ticket['service_name']) . '</td>';
         
         if ($canCall) {
-            echo '<td><span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Matching</span></td>';
+            echo '<td style="width: 20%; padding:12px 16px; vertical-align:middle; ' . $opacity . '"><span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Matching</span></td>';
         } else {
-            echo '<td><span style="background: rgba(100, 116, 139, 0.1); color: #64748b; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Other Counter</span></td>';
+            echo '<td style="width: 20%; padding:12px 16px; vertical-align:middle; ' . $opacity . '"><span style="background: rgba(100, 116, 139, 0.1); color: #64748b; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Other Counter</span></td>';
         }
         echo '</tr>';
     }

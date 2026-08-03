@@ -94,43 +94,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ticketModel->updateStatus($nextTicket['id'], 'called', $currentCounter['id']);
             $_SESSION['just_called'] = true;
         }
-    } elseif (in_array($action, ['serve', 'done', 'no_show', 'recall', 'hold', 'save_details_only']) && $currentTicket) {
-        $name = $_POST['beneficiary_name'] ?? $currentTicket['name'];
-        $reqs = $_POST['requirements'] ?? [];
-        $reqsJson = json_encode($reqs);
-        
-        $remarks = $_POST['remarks'] ?? '';
-        if ($remarks === 'other') {
-            $remarks = $_POST['remarks_other'] ?? '';
-        }
-        
-        // Save details automatically for all unified modal actions
-        if (isset($_POST['beneficiary_name']) || isset($_POST['requirements']) || isset($_POST['remarks'])) {
-            $ticketModel->updateNameAndRequirements($currentTicket['id'], $name, $reqsJson);
-            $currentTicket['name'] = $name;
-            $currentTicket['requirements_checked'] = $reqsJson;
-        }
-        
-        if ($action === 'serve') {
-            // Note: Serve button doesn't have remarks in the form, so we pass null or existing remarks
-            $ticketModel->updateStatus($currentTicket['id'], 'serving', $currentCounter['id']);
-            $_SESSION['just_served'] = true;
-        } elseif ($action === 'done') {
-            // Done button in the main panel doesn't submit remarks if they were saved separately, 
-            // but we can preserve the existing remarks.
-            $existingRemarks = $currentTicket['remarks'] ?? null;
-            $ticketModel->updateStatus($currentTicket['id'], 'done', $currentCounter['id'], $existingRemarks);
-        } elseif ($action === 'no_show') {
-            $ticketModel->updateStatus($currentTicket['id'], 'no-show', $currentCounter['id']);
-        } elseif ($action === 'recall') {
-            $ticketModel->recallTicket($currentTicket['id']);
-            $ticketModel->updateStatus($currentTicket['id'], 'called', $currentCounter['id']);
-            $_SESSION['just_called'] = true;
-        } elseif ($action === 'hold') {
-            $ticketModel->holdTicket($currentTicket['id']);
-        } elseif ($action === 'save_details_only') {
-            $ticketModel->updateStatus($currentTicket['id'], $currentTicket['status'], $currentCounter['id'], $remarks);
-        }
+    } elseif ($action === 'serve' && $currentTicket) {
+        $ticketModel->updateStatus($currentTicket['id'], 'serving', $currentCounter['id']);
+    } elseif ($action === 'done' && $currentTicket) {
+        $ticketModel->updateStatus($currentTicket['id'], 'done', $currentCounter['id']);
+    } elseif ($action === 'no_show' && $currentTicket) {
+        $ticketModel->updateStatus($currentTicket['id'], 'no-show', $currentCounter['id']);
+    } elseif ($action === 'recall' && $currentTicket) {
+        $ticketModel->recallTicket($currentTicket['id']);
+        $_SESSION['just_called'] = true;
+    } elseif ($action === 'hold' && $currentTicket) {
+        $ticketModel->holdTicket($currentTicket['id']);
     } elseif ($action === 'transfer' && $currentTicket) {
         $transfer_service_id = $_POST['transfer_service_id'] ?? null;
         if ($transfer_service_id) {
@@ -140,16 +114,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $counterModel->unlockCounter($userId);
         unset($_SESSION['active_counter_id']);
         $_SESSION['auto_lock_disabled'] = true;
+    } elseif ($action === 'save_requirements' && $currentTicket) {
+        $reqs = $_POST['requirements'] ?? [];
+        $ticketModel->updateRequirementsChecked($currentTicket['id'], json_encode($reqs));
+        $currentTicket['requirements_checked'] = json_encode($reqs);
+        $_SESSION['just_called'] = true;
     }
     
+    // Do not redirect if it's an AJAX call or we want to stay open. But for simplicity, we redirect.
     header("Location: /service_staff/dashboard");
     exit();
 }
 
 $just_called = $_SESSION['just_called'] ?? false;
-$just_served = $_SESSION['just_served'] ?? false;
 unset($_SESSION['just_called']);
-unset($_SESSION['just_served']);
 
 $pageTitle = 'Queue Management - Staff Portal';
 $activeMenu = 'queue';
@@ -178,7 +156,6 @@ if ($role === 'admin') {
 .custom-checkbox .form-check-label { cursor: pointer; padding-left: 0.25rem; }
 </style>
 
-<div id="dashboard-app-container">
 <div class="main-content">
     <!-- ============================================
    HEADER SECTION - Horizontal Profile Style
@@ -254,7 +231,7 @@ if ($role === 'admin') {
         <div class="row g-4">
             <!-- Left Column: Current Serving Area -->
             <div class="col-lg-4 col-md-12">
-                <div class="info-card" style="min-height: 550px;">
+                <div class="info-card">
                     <div class="card-header-custom d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-megaphone me-2"></i> Now Serving</span>
                         <?php if ($currentTicket): ?>
@@ -272,46 +249,60 @@ if ($role === 'admin') {
                             
                             <hr style="border-color: #e2e8f0; margin: 20px 0;">
                             
-                            <!-- Action Buttons -->
-                            <div style="margin-bottom: 24px;">
-                                <?php if ($currentTicket['status'] === 'called'): ?>
-                                    <form method="POST" action="/service_staff/dashboard" style="margin-bottom: 24px;">
-                                        <button type="submit" name="action" value="serve" class="action-btn" style="background: #10b981; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-play-circle-fill"></i> Serve Ticket</button>
-                                        <button type="submit" name="action" value="recall" class="action-btn" style="background: #f59e0b; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-arrow-repeat"></i> Recall Ticket</button>
-                                        <button type="submit" name="action" value="hold" class="action-btn" style="background: #64748b; color: #fff; border: none; width: 100%; margin-bottom: 12px;" onclick="return confirm('Put this ticket on hold (returns to waiting list)?');"><i class="bi bi-pause-circle-fill"></i> Put on Hold</button>
-                                        <button type="submit" name="action" value="no_show" class="action-btn" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; width: 100%;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#ef4444';" onclick="return confirm('Mark this ticket as no-show?');"><i class="bi bi-x-circle-fill"></i> No Show</button>
-                                    </form>
-                                <?php elseif ($currentTicket['status'] === 'serving'): ?>
-                                    <!-- Manage Button -->
-                                    <button type="button" class="action-btn" style="background: #242364; color: #fff; border: none; width: 100%; margin-bottom: 12px; padding: 16px; font-size: 1.1rem;" onclick="document.getElementById('manageTicketModal').style.display='block'">
-                                        <i class="bi bi-pencil-square"></i> Manage Ticket
-                                    </button>
+                            <form method="POST" action="/service_staff/dashboard" style="text-align: left; margin-bottom: 24px;">
+                                <input type="hidden" name="action" value="save_requirements">
+                                <p class="ticket-label" style="margin-bottom: 12px;">Requirements Checklist</p>
+                                <?php 
+                                    $rawReqs = $currentTicket['service_requirements'] ?? '';
+                                    $reqList = preg_split('/[\n,]+/', $rawReqs);
+                                    $reqList = array_map('trim', $reqList);
+                                    $reqList = array_filter($reqList);
+                                    $checkedReqs = json_decode($currentTicket['requirements_checked'] ?? '[]', true) ?: [];
                                     
-                                    <form method="POST" action="/service_staff/dashboard" style="margin-bottom: 16px;">
-                                        <button type="submit" name="action" value="done" class="action-btn" style="background: #10b981; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-check-circle-fill"></i> Complete Ticket</button>
-                                    </form>
-                                    
-                                    <!-- Transfer Button (Compact) -->
-                                    <div style="text-align: center;">
-                                        <button type="button" onclick="document.getElementById('transferFormContainer').style.display = document.getElementById('transferFormContainer').style.display === 'none' ? 'block' : 'none'" style="background: transparent; border: none; color: #64748b; font-size: 0.9rem; cursor: pointer; text-decoration: underline;">
-                                            <i class="bi bi-arrow-left-right"></i> Transfer Ticket
-                                        </button>
-                                        
-                                        <form id="transferFormContainer" method="POST" action="/service_staff/dashboard" style="display: none; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px dashed #cbd5e1; text-align: left; margin-top: 12px;">
-                                            <input type="hidden" name="action" value="transfer">
-                                            <select name="transfer_service_id" required class="form-control-custom" style="margin-bottom: 12px; width: 100%;">
-                                                <option value="">-- Select Service --</option>
-                                                <?php foreach ($allActiveServices as $srv): ?>
-                                                    <?php if ($srv['id'] != $currentTicket['service_id']): ?>
-                                                        <option value="<?= $srv['id'] ?>"><?= htmlspecialchars($srv['name']) ?></option>
-                                                    <?php endif; ?>
-                                                <?php endforeach; ?>
-                                            </select>
-                                            <button type="submit" style="background: #fff; color: #64748b; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; font-weight: 600; width: 100%; cursor: pointer;" onclick="return confirm('Transfer this ticket to the selected service?');">Transfer</button>
-                                        </form>
+                                    if (empty($reqList)):
+                                ?>
+                                    <p style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; color: #64748b; font-size: 0.9rem; font-style: italic;">No specific requirements needed.</p>
+                                <?php else: ?>
+                                    <div style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                        <?php foreach ($reqList as $index => $req): ?>
+                                            <div class="custom-checkbox" style="display: flex; align-items: center; margin-bottom: 8px;">
+                                                <input class="form-check-input" type="checkbox" name="requirements[]" value="<?= htmlspecialchars($req) ?>" id="req_<?= $index ?>" <?= in_array($req, $checkedReqs) ? 'checked' : '' ?> style="margin: 0; margin-right: 8px;">
+                                                <label class="form-check-label text-dark" for="req_<?= $index ?>" style="font-size: 0.9rem;">
+                                                    <?= htmlspecialchars($req) ?>
+                                                </label>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <button type="submit" style="background: #fff; color: #3b82f6; border: 1px solid #3b82f6; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; width: 100%; margin-top: 12px; transition: all 0.2s;" onmouseover="this.style.background='#3b82f6'; this.style.color='#fff';" onmouseout="this.style.background='#fff'; this.style.color='#3b82f6';"><i class="bi bi-save me-1"></i> Save Checklist</button>
                                     </div>
                                 <?php endif; ?>
-                            </div>
+                            </form>
+                            
+                            <!-- Action Buttons -->
+                            <form method="POST" action="/service_staff/dashboard" style="margin-bottom: 24px;">
+                                <?php if ($currentTicket['status'] === 'called'): ?>
+                                    <button type="submit" name="action" value="serve" class="action-btn" style="background: #10b981; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-play-circle-fill"></i> Serve Ticket</button>
+                                    <button type="submit" name="action" value="recall" class="action-btn" style="background: #f59e0b; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-arrow-repeat"></i> Recall Ticket</button>
+                                <?php elseif ($currentTicket['status'] === 'serving'): ?>
+                                    <button type="submit" name="action" value="done" class="action-btn" style="background: #242364; color: #fff; border: none; width: 100%; margin-bottom: 12px;"><i class="bi bi-check-circle-fill"></i> Mark Done</button>
+                                    <button type="submit" name="action" value="hold" class="action-btn" style="background: #64748b; color: #fff; border: none; width: 100%; margin-bottom: 12px;" onclick="return confirm('Put this ticket on hold (returns to waiting list)?');"><i class="bi bi-pause-circle-fill"></i> Put on Hold</button>
+                                <?php endif; ?>
+                                <button type="submit" name="action" value="no_show" class="action-btn" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; width: 100%;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#ef4444';" onclick="return confirm('Mark this ticket as no-show?');"><i class="bi bi-x-circle-fill"></i> No Show</button>
+                            </form>
+                            
+                            <!-- Transfer Form -->
+                            <form method="POST" action="/service_staff/dashboard" style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px dashed #cbd5e1; text-align: left;">
+                                <p class="ticket-label" style="margin-bottom: 8px;"><i class="bi bi-arrow-left-right me-1"></i> Transfer Ticket</p>
+                                <input type="hidden" name="action" value="transfer">
+                                <select name="transfer_service_id" required class="form-control-custom" style="margin-bottom: 12px;">
+                                    <option value="">-- Select Service --</option>
+                                    <?php foreach ($allActiveServices as $srv): ?>
+                                        <?php if ($srv['id'] != $currentTicket['service_id']): ?>
+                                            <option value="<?= $srv['id'] ?>"><?= htmlspecialchars($srv['name']) ?></option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" style="background: #fff; color: #64748b; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; font-weight: 600; width: 100%; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#fff';" onclick="return confirm('Transfer this ticket to the selected service?');">Transfer</button>
+                            </form>
                         <?php else: ?>
                             <div style="padding: 40px 0;">
                                 <i class="bi bi-inbox text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
@@ -327,7 +318,7 @@ if ($role === 'admin') {
                                     }
                                 ?>
                                 <form method="POST" action="/service_staff/dashboard">
-                                    <button type="submit" name="action" value="call_next" id="call-next-btn" class="action-btn" style="background: <?= $canCallNext ? '#242364' : '#94a3b8' ?>; color: #fff; border: none; width: 100%; font-size: 1.1rem; padding: 16px;" <?= !$canCallNext ? 'disabled' : '' ?>>
+                                    <button type="submit" name="action" value="call_next" class="action-btn" style="background: <?= $canCallNext ? '#242364' : '#94a3b8' ?>; color: #fff; border: none; width: 100%; font-size: 1.1rem; padding: 16px;" <?= !$canCallNext ? 'disabled' : '' ?>>
                                         <i class="bi bi-volume-up-fill"></i> Call Next Ticket
                                     </button>
                                 </form>
@@ -339,7 +330,7 @@ if ($role === 'admin') {
             
             <!-- Right Column: Up Next List -->
             <div class="col-lg-8 col-md-12">
-                <div class="info-card" style="min-height: 550px;">
+                <div class="info-card">
                     <div class="card-header-custom d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-list-ol me-2"></i> Waiting List</span>
                         <span style="background: #3b82f6; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;"><?= count($waitingList) ?> in queue</span>
@@ -352,26 +343,26 @@ if ($role === 'admin') {
                             </div>
                         <?php else: ?>
                             <div style="overflow-x: auto;">
-                                <table class="queue-table" style="width:100%; border-collapse:collapse; table-layout: fixed;">
+                                <table class="queue-table" style="width:100%; border-collapse:collapse;">
                                     <thead>
                                         <tr style="border-bottom: 2px solid #e9ecef;">
-                                            <th style="width: 20%; min-width: 110px; padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Ticket No.</th>
-                                            <th style="width: 35%; padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Name / Category</th>
-                                            <th style="width: 25%; padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Service</th>
-                                            <th style="width: 20%; min-width: 110px; padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Status</th>
+                                            <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Ticket No.</th>
+                                            <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Name / Category</th>
+                                            <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Service</th>
+                                            <th style="padding:10px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#6c757d; font-weight:700;">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="waiting-list-body">
                                         <?php foreach ($waitingList as $ticket): ?>
                                             <?php $canCall = in_array($ticket['service_id'], $serviceIds); ?>
                                             <tr style="<?= !$canCall ? 'opacity: 0.5;' : '' ?>">
-                                                <td style="width: 20%; min-width: 120px; white-space: nowrap; padding:12px 16px; vertical-align:middle;">
-                                                    <span class="ticket-number" style="display: inline-block; min-width: 80px; text-align: center; white-space: nowrap; word-break: keep-all; background: <?= $canCall ? '#242364' : '#94a3b8' ?>; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: monospace; font-size: 0.9rem;">
+                                                <td style="padding:12px 16px; vertical-align:middle;">
+                                                    <span class="ticket-number" style="background: <?= $canCall ? '#242364' : '#94a3b8' ?>; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-family: monospace; font-size: 0.9rem;">
                                                         <?= htmlspecialchars($ticket['ticket_number']) ?>
                                                     </span>
                                                 </td>
                                                 <td style="padding:12px 16px; vertical-align:middle; color:#495057; font-weight:700;">
-                                                    <?= htmlspecialchars(!empty($ticket['name']) ? $ticket['name'] : $ticket['citizen_category']) ?>
+                                                    <?= htmlspecialchars($ticket['name'] ?? $ticket['citizen_category']) ?>
                                                 </td>
                                                 <td style="padding:12px 16px; vertical-align:middle; color:#495057;">
                                                     <?= htmlspecialchars($ticket['service_name']) ?>
@@ -396,72 +387,6 @@ if ($role === 'admin') {
     <?php else: ?>
         <p style="color: #64748b; margin-top: 20px;">Please contact an administrator to assign a counter to your account before you can manage queues.</p>
     <?php endif; ?>
-</div>
-
-<!-- Unified Manage Ticket Modal -->
-<?php if ($currentTicket && $currentTicket['status'] === 'serving'): ?>
-<div id="manageTicketModal" class="modal" style="display: <?= $just_served ? 'block' : 'none' ?>;">
-    <div class="modal-content" style="max-width: 500px; padding: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1e293b;">Manage Ticket</h3>
-            <span class="close-btn" onclick="document.getElementById('manageTicketModal').style.display='none'">&times;</span>
-        </div>
-        <form method="POST" action="/service_staff/dashboard" id="manageTicketForm">
-            <input type="hidden" name="action" value="save_details_only">
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Beneficiary Name</label>
-                <input type="text" name="beneficiary_name" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" value="<?= htmlspecialchars($currentTicket['name'] ?? '') ?>" placeholder="Enter beneficiary name...">
-            </div>
-            
-            <p style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Requirements Checklist</p>
-            <?php 
-                $rawReqs = $currentTicket['service_requirements'] ?? '';
-                $reqList = preg_split('/[\n,]+/', $rawReqs);
-                $reqList = array_map('trim', $reqList);
-                $reqList = array_filter($reqList);
-                $checkedReqs = json_decode($currentTicket['requirements_checked'] ?? '[]', true) ?: [];
-                
-                if (empty($reqList)):
-            ?>
-                <p style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; color: #64748b; font-size: 0.9rem; font-style: italic;">No specific requirements needed.</p>
-            <?php else: ?>
-                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-                    <?php foreach ($reqList as $index => $req): ?>
-                        <div class="custom-checkbox" style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <input class="form-check-input" type="checkbox" name="requirements[]" value="<?= htmlspecialchars($req) ?>" id="modal_req_<?= $index ?>" <?= in_array($req, $checkedReqs) ? 'checked' : '' ?> style="margin: 0; margin-right: 8px;">
-                            <label class="form-check-label text-dark" for="modal_req_<?= $index ?>" style="font-size: 0.9rem; cursor: pointer;">
-                                <?= htmlspecialchars($req) ?>
-                            </label>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-            
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Remarks</label>
-                <select name="remarks" id="remarks_select" class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;" onchange="document.getElementById('remarks_other_container').style.display = this.value === 'other' ? 'block' : 'none'">
-                    <?php $savedRemark = $currentTicket['remarks'] ?? ''; ?>
-                    <option value="">-- Select Remark (Optional) --</option>
-                    <option value="Completed" <?= $savedRemark === 'Completed' ? 'selected' : '' ?>>Completed</option>
-                    <option value="Pending Requirements" <?= $savedRemark === 'Pending Requirements' ? 'selected' : '' ?>>Pending Requirements</option>
-                    <option value="other" <?= (!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) && $savedRemark !== '') ? 'selected' : '' ?>>Other (type to specify)</option>
-                </select>
-                
-                <div id="remarks_other_container" style="display: <?= (!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) && $savedRemark !== '') ? 'block' : 'none' ?>;">
-                    <input type="text" name="remarks_other" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" placeholder="Type remark here..." value="<?= htmlspecialchars(!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) ? $savedRemark : '') ?>">
-                </div>
-            </div>
-            
-            <!-- Actions -->
-            <hr style="border-color: #e2e8f0; margin: 24px 0;">
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;">
-                <button type="button" style="background: transparent; color: #64748b; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="document.getElementById('manageTicketModal').style.display='none'">Cancel</button>
-                <button type="submit" style="background: #3b82f6; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Save Details</button>
-            </div>
-        </form>
-    </div>
-</div>
-<?php endif; ?>
 </div>
 
 <!-- ==========================================
@@ -846,42 +771,15 @@ if ($role === 'admin') {
 </script>
 
 <script>
-// Auto-refresh the waiting list every 5 seconds using AJAX
+// Auto-refresh the waiting list every 10 seconds using AJAX
 setInterval(function() {
     fetch('/api/service_staff/waiting_list')
         .then(response => response.text())
         .then(html => {
             document.getElementById('waiting-list-body').innerHTML = html;
-            
-            // Check if there's any matching ticket in the new HTML
-            const callBtn = document.getElementById('call-next-btn');
-            if (callBtn) {
-                if (html.includes('Matching')) {
-                    callBtn.disabled = false;
-                    callBtn.style.background = '#242364';
-                } else {
-                    callBtn.disabled = true;
-                    callBtn.style.background = '#94a3b8';
-                }
-            }
         })
         .catch(err => console.error('Error fetching waiting list:', err));
-}, 5000);
-</script>
-
-<script>
-// Show loading spinner on button click, but allow standard form submission
-document.addEventListener('submit', function(e) {
-    if (e.target.tagName === 'FORM') {
-        const btn = e.submitter || (document.activeElement && document.activeElement.tagName === 'BUTTON' ? document.activeElement : null);
-        if (btn && btn.tagName === 'BUTTON') {
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right: 8px;"></span> Loading...';
-            // We cannot disable the button because standard forms won't submit its value if disabled.
-            // But we can add a pointer-events-none class to prevent double clicks.
-            btn.style.pointerEvents = 'none';
-        }
-    }
-});
+}, 10000);
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
