@@ -99,13 +99,13 @@ require_once __DIR__ . '/../../includes/sidebar_user.php';
         <div class="profile-name-wrapper">
             <span class="profile-name"><?php echo htmlspecialchars(Session::get('username') ?? 'User'); ?></span>
             <span class="profile-verified-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffde00" stroke="none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#242364" stroke="none">
                     <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-4-3.82-4-1.285 0-2.43.615-3.12 1.54-.69-.925-1.835-1.54-3.12-1.54-2.11 0-3.82 1.79-3.82 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 .38.055.745.155 1.1-1.345.85-2.178 2.31-2.178 3.9 0 2.21 1.71 4 3.82 4 2.11 0 3.82-1.79 3.82-4 0-.38-.055-.745-.155-1.1 1.345-.85 2.178-2.31 2.178-3.9 0-.38-.055-.745-.155-1.1z"/>
                 </svg>
             </span>
         </div>
         <div class="profile-role">
-            <span class="info-staff-badge-horizontal">Information Staff</span>
+            <span class="info-staff-badge-horizontal" style="color: #242364">Information Staff</span>
         </div>
     </div>
     
