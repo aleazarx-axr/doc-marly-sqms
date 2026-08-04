@@ -99,9 +99,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reqs = $_POST['requirements'] ?? [];
         $reqsJson = json_encode($reqs);
         
-        $remarks = $_POST['remarks'] ?? '';
-        if ($remarks === 'other') {
-            $remarks = $_POST['remarks_other'] ?? '';
+        $remarks_base = $_POST['remarks'] ?? '';
+        $remarks_other = trim($_POST['remarks_other'] ?? '');
+        
+        if ($remarks_base === 'other') {
+            $remarks = $remarks_other;
+        } else {
+            $remarks = $remarks_base;
+            if ($remarks_other !== '') {
+                $remarks .= ($remarks !== '' ? ' - ' : '') . $remarks_other;
+            }
         }
         
         // Save details automatically for all unified modal actions
@@ -410,7 +417,7 @@ if ($role === 'admin') {
             <input type="hidden" name="action" value="save_details_only">
             <div class="form-group" style="margin-bottom: 20px;">
                 <label style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Beneficiary Name</label>
-                <input type="text" name="beneficiary_name" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" value="<?= htmlspecialchars($currentTicket['name'] ?? '') ?>" placeholder="Enter beneficiary name...">
+                <input type="text" name="beneficiary_name" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" value="<?= htmlspecialchars($currentTicket['name'] ?? '') ?>" placeholder="Enter beneficiary name..." required>
             </div>
             
             <p style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Requirements Checklist</p>
@@ -439,16 +446,16 @@ if ($role === 'admin') {
             
             <div class="form-group" style="margin-bottom: 20px;">
                 <label style="font-size: 0.9rem; color: #475569; margin-bottom: 8px; display: block; font-weight: 600;">Remarks</label>
-                <select name="remarks" id="remarks_select" class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;" onchange="document.getElementById('remarks_other_container').style.display = this.value === 'other' ? 'block' : 'none'">
+                <select name="remarks" id="remarks_select" class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 12px;">
                     <?php $savedRemark = $currentTicket['remarks'] ?? ''; ?>
                     <option value="">-- Select Remark (Optional) --</option>
                     <option value="Completed" <?= $savedRemark === 'Completed' ? 'selected' : '' ?>>Completed</option>
                     <option value="Pending Requirements" <?= $savedRemark === 'Pending Requirements' ? 'selected' : '' ?>>Pending Requirements</option>
-                    <option value="other" <?= (!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) && $savedRemark !== '') ? 'selected' : '' ?>>Other (type to specify)</option>
+                    <option value="other" <?= (!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) && $savedRemark !== '') ? 'selected' : '' ?>>Additional Details / Custom Remark</option>
                 </select>
                 
-                <div id="remarks_other_container" style="display: <?= (!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) && $savedRemark !== '') ? 'block' : 'none' ?>;">
-                    <input type="text" name="remarks_other" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" placeholder="Type remark here..." value="<?= htmlspecialchars(!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) ? $savedRemark : '') ?>">
+                <div id="remarks_other_container" style="display: block;">
+                    <input type="text" name="remarks_other" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px;" placeholder="Type additional details/remarks here..." value="<?= htmlspecialchars(!in_array($savedRemark, ['', 'Completed', 'Pending Requirements']) ? $savedRemark : '') ?>">
                 </div>
             </div>
             
@@ -460,6 +467,25 @@ if ($role === 'admin') {
             </div>
         </form>
     </div>
+    
+    <script>
+        // Auto-update remarks based on checklist
+        document.querySelectorAll('input[name="requirements[]"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const allCbs = document.querySelectorAll('input[name="requirements[]"]');
+                const allChecked = Array.from(allCbs).every(c => c.checked);
+                const remarksSelect = document.getElementById('remarks_select');
+                
+                if (allCbs.length > 0) {
+                    if (allChecked) {
+                        remarksSelect.value = 'Completed';
+                    } else {
+                        remarksSelect.value = 'Pending Requirements';
+                    }
+                }
+            });
+        });
+    </script>
 </div>
 <?php endif; ?>
 </div>
