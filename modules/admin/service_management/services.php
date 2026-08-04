@@ -22,7 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Auto-generate code from name (uppercase, spaces replaced with underscores)
             $serviceModel->code = strtoupper(preg_replace('/[^a-zA-Z0-9]+/', '_', $serviceModel->name));
             
-            $serviceModel->requirements = $_POST['requirements'] ?? '';
+            // Handle array of requirements and implode
+            $reqs = $_POST['requirements'] ?? [];
+            if (!is_array($reqs)) {
+                $reqs = [$reqs];
+            }
+            $reqs = array_map('trim', $reqs);
+            $reqs = array_filter($reqs);
+            $serviceModel->requirements = implode(", ", $reqs);
             
             // Hardcode defaults for removed fields
             $serviceModel->description = '';
@@ -199,8 +206,13 @@ require_once __DIR__ . '/../../../includes/sidebar_admin.php';
                     </div>
                     
                     <div class="mb-3">
-                        <label for="serviceRequirements" class="form-label fw-semibold">Requirements</label>
-                        <textarea class="form-control" id="serviceRequirements" name="requirements" rows="3" placeholder="List down required documents or prerequisites..."></textarea>
+                        <label class="form-label fw-semibold">Requirements</label>
+                        <div id="requirementsContainer">
+                            <!-- Dynamic fields go here -->
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addRequirementField()">
+                            <i class="bi bi-plus-lg"></i> Add Requirement
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer px-4 pb-4 pt-2 border-0 gap-2">
@@ -230,6 +242,12 @@ function openCreateModal() {
     document.getElementById('addServiceForm').reset();
     document.getElementById('serviceId').value = '';
     document.getElementById('serviceModalTitle').innerText = 'Add New Service';
+    
+    // Reset requirements
+    const container = document.getElementById('requirementsContainer');
+    container.innerHTML = '';
+    addRequirementField(); // Add at least one empty field
+    
     serviceModalInstance.show();
 }
 
@@ -242,9 +260,53 @@ function editServiceFromCard(btn) {
     document.getElementById('serviceModalTitle').innerText = 'Edit Service';
     document.getElementById('serviceId').value = id;
     document.getElementById('serviceName').value = name;
-    document.getElementById('serviceRequirements').value = requirements;
+    
+    // Handle requirements
+    const container = document.getElementById('requirementsContainer');
+    container.innerHTML = '';
+    
+    if (requirements && requirements.trim() !== '') {
+        const reqArray = requirements.split(/[\n,]+/);
+        reqArray.forEach(req => {
+            if (req.trim() !== '') {
+                addRequirementField(req.trim());
+            }
+        });
+    }
+    
+    // Add an empty one if there are none
+    if (container.children.length === 0) {
+        addRequirementField();
+    }
     
     serviceModalInstance.show();
+}
+
+function addRequirementField(value = '') {
+    const container = document.getElementById('requirementsContainer');
+    
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2 requirement-item';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.name = 'requirements[]';
+    input.placeholder = 'e.g., Valid ID';
+    input.value = value;
+    
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-outline-danger';
+    btn.onclick = function() {
+        div.remove();
+    };
+    btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+    
+    div.appendChild(input);
+    div.appendChild(btn);
+    
+    container.appendChild(div);
 }
 
 function filterServices() {

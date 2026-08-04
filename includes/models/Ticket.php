@@ -76,7 +76,7 @@ class Ticket {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function updateStatus($ticketId, $status, $counterId = null) {
+    public function updateStatus($ticketId, $status, $counterId = null, $remarks = null) {
         $query = "UPDATE " . $this->table_name . " 
                   SET status = :status";
         
@@ -88,6 +88,10 @@ class Ticket {
             $query .= ", counter_id = :counter_id";
         }
         
+        if ($remarks !== null) {
+            $query .= ", remarks = :remarks";
+        }
+        
         $query .= " WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -96,6 +100,10 @@ class Ticket {
         
         if ($status !== 'waiting' && $counterId !== null) {
             $stmt->bindParam(':counter_id', $counterId);
+        }
+        
+        if ($remarks !== null) {
+            $stmt->bindParam(':remarks', $remarks);
         }
         
         return $stmt->execute();
@@ -200,6 +208,32 @@ class Ticket {
     public function updateRequirementsChecked($ticketId, $requirementsCheckedJson) {
         $query = "UPDATE " . $this->table_name . " SET requirements_checked = :reqs WHERE id = :id";
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':reqs', $requirementsCheckedJson);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
+    }
+    public function updateTicketDetails($ticketId, $name, $requirementsCheckedJson, $status = 'serving') {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET name = :name, 
+                      requirements_checked = :reqs, 
+                      status = :status, 
+                      served_at = CURRENT_TIMESTAMP 
+                  WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':reqs', $requirementsCheckedJson);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $ticketId);
+        return $stmt->execute();
+    }
+    
+    public function updateNameAndRequirements($ticketId, $name, $requirementsCheckedJson) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET name = :name, 
+                      requirements_checked = :reqs 
+                  WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':name', $name);
         $stmt->bindParam(':reqs', $requirementsCheckedJson);
         $stmt->bindParam(':id', $ticketId);
         return $stmt->execute();
